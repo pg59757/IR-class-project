@@ -8,6 +8,9 @@ venv/
 env/
 ENV/
 
+#chrome-linux64/
+chrome-linux64/
+
 # IDE
 .vscode/
 .idea/

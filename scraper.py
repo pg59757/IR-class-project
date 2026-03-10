@@ -8,26 +8,28 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.service import Service
+
 
 
 def is_valid_executable(path):
     """
     Check if a path points to a valid executable file.
-    
+
     Args:
         path (str): Path to check.
-    
+
     Returns:
         bool: True if the path is a valid executable file, False otherwise.
     """
     if not os.path.isfile(path):
         return False
-    
+
     # On Windows, os.access with os.X_OK may not work reliably
     # so we just check if the file exists
     if platform.system() == "Windows":
         return True
-    
+
     # On Unix-like systems, check if the file is executable
     return os.access(path, os.X_OK)
 
@@ -35,18 +37,18 @@ def is_valid_executable(path):
 def find_chrome_executable():
     """
     Attempts to find Chrome executable in common installation locations.
-    
+
     Checks for Chrome in default installation paths on both Windows and Linux.
     Returns the path to the Chrome executable if found, otherwise returns None.
-    
+
     Returns:
         str or None: Path to Chrome executable if found, None otherwise.
     """
     system = platform.system()
-    
+
     # List of common Chrome executable paths
     chrome_paths = []
-    
+
     if system == "Windows":
         # Windows default installation paths
         possible_paths = [
@@ -60,7 +62,18 @@ def find_chrome_executable():
             os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Chromium', 'Application', 'chrome.exe'),
         ]
         chrome_paths.extend(possible_paths)
-        
+
+        # Also add hardcoded paths for Chrome
+        chrome_paths.extend([
+            'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Users\\%USERNAME%\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Program Files\\Chromium\\Application\\chrome.exe',
+            'C:\\Program Files (x86)\\Chromium\\Application\\chrome.exe',
+            'C:\\Users\\%USERNAME%\\AppData\\Local\\Chromium\\Application\\chrome.exe',
+            'D:\\Portable\\chrome\\chrome.exe'
+        ])
+
     elif system == "Linux":
         # Linux default installation paths
         possible_paths = [
@@ -77,72 +90,63 @@ def find_chrome_executable():
             '/opt/google/chrome/google-chrome',
         ]
         chrome_paths.extend(possible_paths)
-        
+
+        # Also add hardcoded paths for Chrome inside the project directory (for portable Chrome)
+        chrome_paths.extend([
+            'chrome-linux64/chrome'
+        ])
+
     elif system == "Darwin":  # macOS
         possible_paths = [
             '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
             '/Applications/Chromium.app/Contents/MacOS/Chromium',
         ]
         chrome_paths.extend(possible_paths)
-    
+
     # Check each path
     for chrome_path in chrome_paths:
         if is_valid_executable(chrome_path):
             print(f"Found Chrome at: {chrome_path}")
             return chrome_path
-    
+
     # If not found in common locations, check if 'google-chrome' or 'chromium' is in PATH
     for executable in ['google-chrome', 'chromium', 'chromium-browser', 'chrome']:
         chrome_in_path = shutil.which(executable)
         if chrome_in_path:
             print(f"Found Chrome in PATH: {chrome_in_path}")
             return chrome_in_path
-    
+
     print("Chrome not found in default locations.")
     return None
 
 
 class UMinhoDSpace8Scraper:
-    def __init__(self, base_url, max_items=10, portable_chrome_path=None):
+    def __init__(self, base_url, max_items=10):
         """
         Initialize the web scraper with Selenium WebDriver configuration.
         Args:
             base_url (str): The base URL of the website to scrape.
             max_items (int, optional): Maximum number of items to scrape. Defaults to 10.
-            portable_chrome_path (str, optional): Path to portable Chrome executable if Chrome is not installed.
-                                                  Only used as fallback if Chrome is not found in default locations.
         Note:
             Automatically detects Chrome in default installation locations on Windows and Linux.
-            Falls back to portable Chrome executable if provided and Chrome is not found.
-            For Chrome binaries, visit: https://googlechromelabs.github.io/chrome-for-testing/#stable
+            If you don't have Chrome, you can download a portable version from:
+            https://googlechromelabs.github.io/chrome-for-testing/#stable
         """
         self.base_url = base_url
-        
         chrome_options = Options()
-        
+
         # Try to find Chrome in default installation locations
         chrome_path = find_chrome_executable()
-        
-        # If Chrome not found and portable path is provided, use it
-        if chrome_path is None and portable_chrome_path is not None:
-            if is_valid_executable(portable_chrome_path):
-                chrome_path = portable_chrome_path
-                print(f"Using portable Chrome at: {chrome_path}")
-            else:
-                print(f"Warning: Portable Chrome path '{portable_chrome_path}' does not exist or is not executable.")
-        
-        # Set the binary location if a specific path was found
-        if chrome_path:
-            chrome_options.binary_location = chrome_path
-        else:
-            print("Warning: Chrome executable not found. Attempting to use system default (may fail if Chrome is not in PATH).")
-        
-        chrome_options.add_argument("--headless=new")
-        chrome_options.add_argument("--window-size=1920,1080")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        
+
+        if chrome_path is None:
+            raise FileNotFoundError("Chrome executable not found. Please install Chrome or provide a portable version.")
+
+        chrome_options.binary_location = chrome_path
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-gpu')
+
         self.driver = webdriver.Chrome(options=chrome_options)
         self.wait = WebDriverWait(self.driver, 10)
 
@@ -159,7 +163,7 @@ class UMinhoDSpace8Scraper:
         # Wait for the table to appear
         self.wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "table.table-striped")))
         time.sleep(self.ANGULAR_SETTLE_TIME) # Angular settle time
-        
+
         # Dictionary to store the mapping we want
         # This is our "Shopping List" - Key: what the HTML says, Value: what we want in our JSON
         targets = {
@@ -169,13 +173,13 @@ class UMinhoDSpace8Scraper:
             "dc.contributor.author": "authors",
             "dc.description.abstract": "abstract"
         }
-        
+
         data = { "title": "N/A", "year": "N/A", "doi": "N/A", "abstract": "N/A", "authors": [] }
 
         try:
             # Locate all rows in the metadata table
             rows = self.driver.find_elements(By.CSS_SELECTOR, "table.table-striped tbody tr")
-            
+
             for row in rows:
                 cols = row.find_elements(By.TAG_NAME, "td")
                 if len(cols) >= 2:
@@ -191,28 +195,28 @@ class UMinhoDSpace8Scraper:
 
         except Exception as e:
             print(f"Error parsing table: {e}")
-        
+
         return data
 
     def go_to_next_page(self):
         """
-        Attempts to click the next page button. 
+        Attempts to click the next page button.
         Raises NoSuchElementException if the button is missing or disabled.
         """
         # XPath looking for an active (not disabled) 'Next' button
         next_button_xpath = "//li[contains(@class, 'page-item') and not(contains(@class, 'disabled'))]/a[@aria-label='Next']"
-        
+
         try:
             next_button = self.driver.find_element(By.XPATH, next_button_xpath)
-            
+
             # Scroll and Click
             self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", next_button)
             next_button.click()
-            
-            # Wait for Angular to swap the content, Slightly longer wait after clicking 
-            time.sleep(self.ANGULAR_SETTLE_TIME + 1)  
+
+            # Wait for Angular to swap the content, Slightly longer wait after clicking
+            time.sleep(self.ANGULAR_SETTLE_TIME + 1)
             return True
-            
+
         except NoSuchElementException:
             # Re-raising the exception so the caller knows to stop the loop
             raise NoSuchElementException("Reached the last page: 'Next' button is missing or disabled.")
@@ -233,12 +237,12 @@ class UMinhoDSpace8Scraper:
         # Wait for the Angular component that holds the item list
         print("Waiting for Angular to populate the item list...")
         self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "ds-listable-object-component-loader")))
-        
+
         # Give it a moment to render the links inside those components
         time.sleep(self.ANGULAR_SETTLE_TIME)
 
         while True:
-            
+
             # 1. Locate all paper containers on the current page
             items = self.driver.find_elements(By.TAG_NAME, "ds-listable-object-component-loader")
 
@@ -259,7 +263,7 @@ class UMinhoDSpace8Scraper:
                     if href:
                         # Clean the URL (removes ?show=full etc.)
                         clean_url = href.split('?')[0]
-                        
+
                         if clean_url not in paper_urls:
                             paper_urls.append(clean_url)
                             print(f"  [{len(paper_urls)}] Found: {clean_url}")
@@ -287,16 +291,16 @@ class UMinhoDSpace8Scraper:
         """
         results = []     # To store final results
         paper_urls = []  # To store unique paper URLs
-        
+
         print(f"Loading collection list: {self.base_url}") # Debug print
-       
+
         try:
-            
+
             # Collect paper links across paginated collection
             paper_urls = self.collect_all_links()
 
             print(f"Found {len(paper_urls)} papers. Extracting metadata...") # Debug print
-            
+
             # Visit each paper to get the abstract and authors
             for url in paper_urls:
                 # print(f"   Opening Paper: {url}")               # Debug print
@@ -307,5 +311,5 @@ class UMinhoDSpace8Scraper:
 
         finally:
             self.driver.quit()
-            
+
         return results
