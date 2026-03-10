@@ -6,6 +6,8 @@
 
 A comprehensive web application for searching and discovering research publications and authors affiliated with University of Minho. This project combines web scraping, natural language processing, and modern web technologies to provide an intuitive search experience for academic content.
 
+Project inspired by the [Coventry-PureHub-Search-Engine](https://github.com/maladeep/Coventry-PureHub-Search-Engine/tree/main?tab=readme-ov-file#features)
+
 ## 📚 Table of Contents
 
 - [Overview](#overview)
@@ -82,7 +84,7 @@ UMinho-scraper/
 │   ├── api/                 # Backend API
 │   │   ├── app.py           # FastAPI application
 │   │   └── routes/          # API endpoints
-│   └── frontend/            # React frontend
+│   └── frontend/            # Frontend
 │       ├── src/
 │       └── public/
 │
@@ -186,7 +188,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed instructions.
 
 ## 📖 Documentation
 
-Comprehensive documentation is available in the `docs/` directory.. 
+Comprehensive documentation is available in the `docs/` directory..
 
 ---
 
