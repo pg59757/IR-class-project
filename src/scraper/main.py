@@ -1,5 +1,5 @@
 import json
-import scraper
+import src.scraper.scraper as scraper
 
 def main():
 
