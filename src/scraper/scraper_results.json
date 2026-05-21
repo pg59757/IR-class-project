@@ -1,0 +1,187 @@
+[
+    {
+        "title": "A FIPA-compliant framework for integrating rule engines into software agents for supporting communication and collaboration in a multiagent platform",
+        "year": "2019",
+        "doi": "10.1007/978-3-030-16184-2_13",
+        "abstract": "Production rules have been traditionally considered a good knowledge representation formalism for creating expert systems, and also as a good mechanism for building intelligence within software agents due to the flexibility of their declarative knowledge representation. But the use of rules and rule engines for implementing behaviors inside agents in the context of a multiagent environment has a number of challenges if one wants to adhere and preserve the defining characteristics of agency and support the kind of communication and collaboration mechanisms needed by multiagent systems. This paper describes a framework, and its implementation, for the integration of production rules reasoning mechanisms inside software agents in the context of a multiagent platform, preserving the defining characteristics of agency and accomplishing the well-established FIPA standards for agent interaction. The implementation has been accomplished by using either CLIPS or Jess as the rule engine, but it can be extended to other formalisms. JADE was chosen as the multiagent platform for developing and testing the solution. The proposed framework includes the uncoupled integration of the rule inference engine into the agent and the adherence to FIPA specifications about using protocols and communication processes. The resulting framework can be used to adapt legacy expert systems whose functionality can be divided to be performed by separate agents or to build new, distributed intelligent systems exploiting the capacities of a multiagent platform at different levels. To show the validity of the approach, a functional test environment was built and is available for downloading.",
+        "authors": [
+            "Aguayo-Canela, Francisco J.",
+            "Alaiz-Moretón, Héctor",
+            "García-Rodríguez, Isaías",
+            "Benavides-Cuéllar, Carmen",
+            "Benítez-Andrades, José Alberto",
+            "Novais, Paulo"
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "LOOM: Interweaving tightly coupled visualization and numeric simulation framework",
+        "year": "2021",
+        "doi": "10.1145/3490138.3490139",
+        "abstract": "Traditional post-hoc high-fidelity scientific visualization (HSV) of numerical simulations requires multiple I/O check-pointing to inspect the simulation progress. The costs of these I/O operations are high and can grow exponentially with increasing problem sizes. In situ HSV dispenses with costly check-pointing I/O operations, but requires additional computing resources to generate the visualization, increasing power and energy consumption. In this paper we present LOOM, a new interweaving approach supported by a task scheduling framework to allow tightly coupled in situ visualization without significantly adding to the overall simulation runtime. The approach exploits the idle times of the numerical simulation threads, due to workload imbalances, to perform the visualization steps. Overall execution time (simulation plus visualization) is minimized. Power requirements are also minimized by sharing the same computational resources among numerical simulation and visualization tasks. We demonstrate that LOOM reduces time to visualization by 3 × compared to a traditional non-interwoven pipeline. Our results here demonstrate good potential for additional gains for large distributed-memory use cases with larger interleaving opportunities.",
+        "authors": [
+            "Barbosa, Joao",
+            "Navratil, Paul",
+            "Santos, Luís Paulo",
+            "Fussell, Donald"
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "Towards Entity Linking, NER in archival finding aids",
+        "year": "2021-09-13",
+        "doi": "N/A",
+        "abstract": "The amount of information present in Portuguese archives has been increasing exponentially over the years. At the moment, the majority of the data is already available to the public in digital format, however, the records are stored as unstructured text, making its data processing challenging. In this way, it is intended to perform a semantic interpretation of these documents through the identification and classification of Named Entities. For this purpose, the use of Natural Language Processing tools is proposed, training Machine Learning algorithms capable of accurately recognizing entities in this context. Finally, it is presented a Web platform that implements all the models trained in this paper, as well as some tools that gave support to the entity extraction process.",
+        "authors": [
+            "Cunha, Luís Filipe da Costa",
+            "Ramalho, José Carlos"
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "Development of self-diagnosis tests system using a DSL for creating new test suites for integration in a cyber-physical system",
+        "year": "2021-07-02",
+        "doi": "10.4230/OASIcs.SLATE.2021.19",
+        "abstract": "Testing Cyber-physical systems (CPS) requires highly qualified engineers to design the tests since its computational part is programmed in low-level languages. The origin of this work arises from the need to find a solution that optimizes this problem and allows abstracting the current methods so that the tests can be created and executed more efficiently. We intend to do this by creating a self-diagnosis tests system that allows us to automate some of the current processes in the creation and execution of test suites. The work presented here addresses the problem by creating a new self-diagnosis tests system that will guarantee the reliability and integrity of the CPS. In detail, this paper begins by exposing a study on the current state of the art of test automation, Keyword-driven Testing (KDT) methodology and Domain-specific Languages (DSL). A new modular and extensible architecture is proposed for self-diagnosis tests systems based on two main concepts: the creation of a DSL combined with the use of the KDT methodology, as well as a methodology to extend it and integrate it into a CPS. A new self-diagnosis tests system has been proposed that applies the proposed architecture proving that it is possible to carry out the self-diagnosis in real-time of the CPS and allowing the integration of any type of test. To validate the implementation of the system, 28 test cases were carried out to cover all its functionalities. The results show that all test cases passed and, therefore, the system meets all the proposed objectives.",
+        "authors": [
+            "Pereira, Ricardo B.",
+            "Ramalho, José Carlos",
+            "Brito, Miguel A."
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "Major Minors - Ontological representation of minorities by newspapers",
+        "year": "2021-07-01",
+        "doi": "10.4230/OASIcs.SLATE.2021.3",
+        "abstract": "The stigma associated with certain minorities has changed throughout the years, yet there’s no central data repository that enables a concrete tracking of this representation. Published articles on renowned newspapers are a way of determining the public perception on this subject, mainly digital newspapers, being it through the media representation (text and photo illustrations) or user comments. The present paper seeks to showcase a project that attempts to fulfill that shortage of data by providing a repository in the form of an ontology: RDF triplestores composing a semantic database (W3C standards for Semantic Web). This open-source project aims to be a research tool for mapping and studying the representation of minority groups in a Portuguese journalistic context over the course of two decades.",
+        "authors": [
+            "Martins, Paulo Jorge Pereira",
+            "Costa, Leandro José Abreu Dias",
+            "Ramalho, José Carlos"
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "DataGen: JSON/XML Dataset Generator",
+        "year": "2021-07-01",
+        "doi": "10.4230/OASIcs.SLATE.2021.6",
+        "abstract": "In this document, it is described the steps towards DataGen’s implementation. DataGen is a versatile and powerful tool that allows for quick prototyping and testing of software applications, since currently too few solutions offer both the complexity and scalability necessary to generate adequate datasets in order to feed a data API or a more complex APP, enabling their testing with appropriate data volume and complexity. DataGen’s core is a Domain Specific Language (DSL) that was created to specify datasets. This language suffered several updates: repeating fields (with no limit), fuzzy fields (statistically generated), lists, high order functions over lists, custom made transformation functions. The final result is a diversified algebra that allows the generation of very complex datasets coping with very convoluted requirements. Throughout the paper, several examples of the possibilities will be given. After generating a dataset, DataGen gives the user the possibility to generate a RESTFul data API with it, creating a running prototype. This solution has already been used in real life cases, described with more detail throughout the paper, in which it was able to create the intended datasets successfully. These allowed the application’s performance to be tested and for the right adjustments to be made. The tool is currently being deployed for general use.",
+        "authors": [
+            "Santos, Filipa Alves dos",
+            "Cardoso, Hugo André Coelho",
+            "Costa, João da Cunha e",
+            "Carvalho, Válter Ferreira Picas",
+            "Ramalho, José Carlos"
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "NER in Archival Finding Aids",
+        "year": "2021-07-01",
+        "doi": "10.4230/OASIcs.SLATE.2021.8",
+        "abstract": "At the moment, the vast majority of Portuguese archives with an online presence use a software solution to manage their finding aids: e. g. Digitarq or Archeevo. Most of these finding aids are written in natural language without any annotation that would enable a machine to identify named entities, geographical locations or even some dates. That would allow the machine to create smart browsing tools on top of those record contents like entity linking and record linking. In this work we have created a set of datasets to train Machine Learning algorithms to find those named entities and geographical locations. After training several algorithms we tested them in several datasets and registered their precision and accuracy. These results enabled us to achieve some conclusions about what kind of precision we can achieve with this approach in this context and what to do with the results: do we have enough precision and accuracy to create toponymic and anthroponomic indexes for archival finding aids? Is this approach suitable in this context? These are some of the questions we intend to answer along this paper.",
+        "authors": [
+            "Cunha, Luís Filipe da Costa",
+            "Ramalho, José Carlos"
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "A quantum algorithm for ray casting using an orthographic camera",
+        "year": "2019",
+        "doi": "10.1109/ICGI47575.2019.8955061",
+        "abstract": "Quantum computing has the potential to provide solutions to many problems which are challenging or out of reach of classical computers. There are several problems in rendering which are amenable to being solved in quantum computers, but these have yet to be demonstrated in practice. This work takes a first step in applying quantum computing to one of the most fundamental operations in rendering: ray casting. This technique computes visibility between two points in a 3D model of the world which is described by a collection of geometric primitives. The algorithm returns, for a given ray, which primitive it intersects closest to its origin. Without a spatial acceleration structure, the classical complexity for this operation is O(N). In this paper, we propose an implementation of Grover's Algorithm (a quantum search algorithm) for ray casting. This provides a quadratic speed up allowing for visibility evaluation for unstructured primitives in O(√N). However, due to technological limitations associated with current quantum computers, in this work the geometrical setup is limited to rectangles and parallel rays (orthographic projection).",
+        "authors": [
+            "Alves, Carolina",
+            "Santos, Luís Paulo",
+            "Bashford-Rogers, Thomas"
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "nSharma: Numerical Simulation Heterogeneity Aware Runtime Manager for OpenFOAM",
+        "year": "2018",
+        "doi": "10.1007/978-3-319-93698-7_33",
+        "abstract": "CFD simulations are a fundamental engineering application,implying huge workloads, often with dynamic behaviour due to run-time mesh refinement. Parallel processing over heterogeneous distributedmemory clusters is often used to process such workloads. The executionof dynamic workloads over a set of heterogeneous resources leads to loadimbalances that severely impacts execution time, when static uniformload distribution is used. This paper proposes applying dynamic, het-erogeneity aware, load balancing techniques within CFD simulations.nSharma, a software package that fully integrates with OpenFOAM, ispresented and assessed. Performance gains are demonstrated, achievedby reducing busy times standard deviation among resources, i.e. hetero-geneous computing resources are kept busy with useful work due to aneffective workload distribution. To best of authors’ knowledge, nSharmais the first implementation and integration of heterogeneity aware loadbalancing in OpenFOAM and will be made publicly available in order tofoster its adoption by the large community of OpenFOAM users.",
+        "authors": [
+            "Ribeiro, Roberto",
+            "Santos, Luís Paulo",
+            "Nóbrega, J. M."
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "Plataforma CLAV: contributo para a disponibilização de dados abertos da Administração Pública em Portugal",
+        "year": "2019-07-09",
+        "doi": "N/A",
+        "abstract": "Nos últimos tempos temos assistido à definição de políticas e estratégias, na Europa e em Portugal, para a disponibilização de dados abertos, nos domínios da ciência aberta e da Administração Pública (AP). Neste último caso, a política europeia de livre acesso aos dados foi preconizada pela Diretiva 2013/37/UE do Parlamento Europeu e do Conselho, de 26 de junho de 2013, transposta para a Lei n.o 26/2016, que aprova o regime de acesso à informação administrativa e promove a sua reutilização através do uso de formatos de dados abertos. Também a Declaração de Tallinn, de 2017, que segue o “Plano de ação europeu (2016-2020) para a administração pública em linha”, reconheceu a necessidade de uma maior abertura e transparência no acesso dos cidadãos aos dados recolhidos pela AP. Em simultâneo, em Portugal, têm sido promovidas políticas para a transformação digital na Administração Pública, consignada em diplomas e documentos orientadores, como a com 3 eixos: 1/ integração e interoperabilidade; 2/ inovação e competitividade e 3/ partilha de Resolução do Conselho de Ministros (RCM) n.o 108/2017, de 26 de julho, que aprovou a Estratégia TIC 2020, recursos. Merece ainda destaque a RCM n.o 51/2017, de 19 de abril, que pretende reduzir o consumo de papel na Administração Pública, “promovendo a otimização de processos e a modernização de procedimentos administrativos”, nomeadamente através da desmaterialização de processos, da promoção da adoção de sistemas de gestão documental eletrónica ou outros e da digitalização de documentos destinados a ser arquivados. Entre as medidas previstas estão a adoção de processos de “classificação, avaliação e seleção de informação, tendo em consideração, sempre que possível, os princípios de uma Macroestrutura Funcional (MEF) e a Avaliação Supra- Institucional na Administração (ASIA)”. Neste contexto, o organismo de coordenação da política arquivística – a Direção-Geral do Livro, dos Arquivos e das Bibliotecas (DGLAB) – tem vindo a desenvolver estratégias de promoção da interoperabilidade semântica e de gestão da informação arquivística, nomeadamente ao nível do seu registo, classificação e avaliação. Para responder às necessidades neste domínio, a DGLAB levou a efeito um conjunto de iniciativas, de que se destaca a divulgação do esquema Metainformação para a Interoperabilidade (MIP), utilizado no Modelo de Dados Canónico da plataforma de interoperabilidade na Administração Pública (iAP), bem como a publicação da Lista Consolidada para a classificação e avaliação da informação pública (LC), que serve de referencial para a construção normalizada dos planos de classificação e tabelas de seleção das entidades que executam funções de Estado. A Lista Consolidada é o resultado de projetos que se sucederam no tempo e que visaram a construção de uma linguagem comum para a classificação da informação arquivística, numa perspetiva funcional, passível de utilizar no registo e na troca de documentos via iAP, bem como para a avaliação dessa informação, numa perspetiva suprainstitucional. Referimo-nos ao projeto Macroestrutura Funcional (MEF), que teve por objetivo a identificação das funções e subfunções executadas pela Administração Pública, ao projeto “Harmonização de terceiros níveis em planos de classificação conformes à MEF”, que teve por finalidade a identificação de processos de negócio em que se decompõem as funções, e ao projeto “Avaliação suprainstitucional da informação arquivística” (ASIA), que teve por objetivo a harmonização, entre as entidades públicas, dos prazos de conservação e destinos finais da documentação produzida no âmbito dos processos de negócio. Para operacionalizar a utilização da Lista Consolidada, a DGLAB, enquadrada pela Medida 51 do Programa de simplificação administrativa Simplex +, intitulada “Arquivo digital”, procedeu, no âmbito do Aviso SAMA n.o 02/SAMA2020/2016, ao desenvolvimento do Projeto “M51-CLAV - Arquivo digital: Plataforma modular de classificação e avaliação da informação pública” (CLAV). Para o efeito, obteve a colaboração da Universidade do Minho para os trabalhos da componente tecnológica e da empresa Morais Leitão, Galvão Teles, Soares da Silva & Associados (MLGTS), para a elaboração da proposta de Regime jurídico da classificação e avaliação da informação arquivística (RJCAIA), de suporte à utilização da Plataforma CLAV e às mudanças de procedimentos de gestão da informação a operar na AP. A Plataforma CLAV disponibiliza um conjunto de produtos e serviços orientados para a Administração Pública, as empresas e o cidadão, de que destacamos os seguintes:  Uma ontologia com os processos de negócio das entidades que exercem funções públicas (Lista Consolidada, LC), associada a um catálogo da legislação que os regula e dos organismos que os executam e que são responsáveis pela preservação da informação produzida nesse contexto e pela gestão do seu ciclo de vida.  Tabelas de seleção, derivadas da LC, com identificação das classes e do ciclo de vida da informação associada aos processos de negócios (prazos de conservação administrativa e destino final) para implementação em contexto organizacional ou pluriorganizacional.",
+        "authors": [
+            "Lourenço, Alexandra",
+            "Gago, Maria Rita",
+            "Penteado, Pedro"
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "SPARQLing Neo4J",
+        "year": "2020-09-16",
+        "doi": "10.4230/OASIcs.SLATE.2020.17",
+        "abstract": "The growth experienced by the internet in the past few years as lead to an increased amount of available data and knowledge obtained from said data. However most of this knowledge is lost due to the lack of associated semantics making the task of interpreting data very hard to computers. To counter this, ontologies provide a extremely solid way to represent data and automatically derive knowledge from it. In this article we’ll present the work being developed with the aim to store and explore ontologies in Neo4J. In order to achieve this a web frontend was developed, integrating a SPARQL to CYPHER translator to allow users to query stored ontologies using SPARQL. This translator and its code generation is the main subject of this paper.",
+        "authors": [
+            "Moreira, Ezequiel",
+            "Ramalho, José Carlos"
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "Open web ontobud: An open source RDF4J frontend",
+        "year": "2020-09-16",
+        "doi": "10.4230/OASIcs.SLATE.2020.15",
+        "abstract": "Nowadays, we deal with increasing volumes of data. A few years ago, data was isolated, which did not allow communication or sharing between datasets. We live in a world where everything is connected, and our data mimics this. Data model focus changed from a square structure like the relational model to a model centered on the relations. Knowledge graphs are the new paradigm to represent and manage this new kind of information structure. Along with this new paradigm, a new kind of database emerged to support the new needs, graph databases! Although there is an increasing interest in this field, only a few native solutions are available. Most of these are commercial, and the ones that are open source have poor interfaces, and for that, they are a little distant from end-users. In this article, we introduce Ontobud, and discuss its design and development. A Web application that intends to improve the interface for one of the most interesting frameworks in this area: RDF4J. RDF4J is a Java framework to deal with RDF triples storage and management. Open Web Ontobud is an open source RDF4J web frontend, created to reduce the gap between end users and the RDF4J backend. We have created a web interface that enables users with a basic knowledge of OWL and SPARQL to explore ontologies and extract information from them.",
+        "authors": [
+            "Oliveira, Francisco José Moreira",
+            "Ramalho, José Carlos"
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "Plataforma M51-CLAV: o que há de novo?",
+        "year": "2017-11-03",
+        "doi": "N/A",
+        "abstract": "A presente comunicação tem como objetivo a apresentação do “Projeto M51-CLAV – Arquivo digital: Plataforma modular de classificação e avaliação da informação pública”, desenvolvido pela Direção-Geral do Livro, dos Arquivos e das Bibliotecas (DGLAB), em parceria com a Universidade do Minho, no âmbito do Aviso N.º 02/SAMA2020/2016, para dar cumprimento à Medida 51 do Simplex + “Arquivo digital” (cf. https://www.simplex.gov.pt/). Pretende-se apresentar os primeiros resultados, principalmente os relativos às duas etapas iniciais: Levantamento de requisitos de requisitos funcionais e não funcionais e Modelação e análise de informação.",
+        "authors": [
+            "Lourenço, Alexandra",
+            "Ramalho, José Carlos",
+            "Gago, Maria Rita",
+            "Penteado, Pedro"
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "Get your spreadsheets under (version) control",
+        "year": "2019",
+        "doi": "N/A",
+        "abstract": "Spreadsheets play a pivotal role in many organizations. They serve to store and manipulate data or forecasting, and they are often used to help in the decision process, thus directly impacting the success, or not, of organizations. As the research community already realized, spreadsheets tend to have the same problems “professional” software contain. Thus, in the past decade many software engineering techniques have been successfully proposed to aid spreadsheet developers and users. However, one of the most used mechanisms to manage software projects is still lacking in spreadsheets: a version control system. A version control system allows for collaborative development, while also allowing individual developers to explore different alternatives without compromising the main project. In this paper we present a version control system, named SheetGit, oriented for end-user programmers. It allows to graphically visualize the history of versions (including branches), to switch between different versions just by pointing and clicking, and to visualize the differences between any two versions in an animated way. To validate our approach/tool we performed an empirical evaluation which shows evidence that SheetGit can aid users when compared to other tools.",
+        "authors": [
+            "Macedo, José Nuno",
+            "Moreira, Ricardo",
+            "Cunha, Jácome",
+            "Saraiva, João"
+        ],
+        "document_link": "N/A"
+    },
+    {
+        "title": "Contributos para promover a adequação de uma abordagem baseada em serviços para o RSE",
+        "year": "2014",
+        "doi": "10.1109/CISTI.2014.6876956",
+        "abstract": "There are many issues to consider when we develop an information system for managing the electronic health record (EHR). It must be useful for several types of users, entities and departments of health services. Also, it must be flexible to meet a broad set of needs and cover a wide range of clinical and non-clinical areas in health. In this paper we describe a regional healthcare system, having in mind to illustrate a distributed, heterogeneous healthcare system, and then to discuss the suitability of the Triple Helix model for governance in a service-oriented architecture context, following the OpenEHR.",
+        "authors": [
+            "Gomes, Luis Mendes",
+            "Guerra, Helia",
+            "Bem, Nuno",
+            "Andrade, Carmen"
+        ],
+        "document_link": "N/A"
+    }
+]

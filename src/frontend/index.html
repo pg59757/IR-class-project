@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RepositóriUM Search Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --primary: #003f8a;
+      --primary-light: #1a5fa8;
+      --primary-dark: #002a5c;
+      --accent: #e8a020;
+      --accent-light: #fef3dc;
+      --bg: #f0f3f9;
+      --card-bg: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #dde1ea;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --info: #0ea5e9;
+      --radius: 8px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,0.18);
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
+      color: white; padding: 1.25rem 2rem;
+      display: flex; align-items: center; gap: 1rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+      position: sticky; top: 0; z-index: 100;
+    }
+    header .logo-block { display: flex; align-items: center; gap: .75rem; }
+    header .logo { font-size: 1.8rem; }
+    header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -.01em; }
+    header p { font-size: 0.78rem; opacity: .75; font-family: var(--mono); margin-top: .1rem; }
+    .header-right { margin-left: auto; display: flex; gap: .5rem; }
+    .btn-header {
+      background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.25);
+      color: white; padding: .4rem .9rem; border-radius: var(--radius);
+      font-size: .8rem; cursor: pointer; font-family: var(--sans); transition: background .15s;
+      font-weight: 600;
+    }
+    .btn-header:hover { background: rgba(255,255,255,.23); }
+    .btn-header.active-view { background: rgba(255,255,255,.28); border-color: white; }
+
+    /* ── MAIN LAYOUT ── */
+    main { max-width: 980px; margin: 1.75rem auto; padding: 0 1rem; }
+
+    /* ── SEARCH CARD ── */
+    .search-card {
+      background: var(--card-bg); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 1.5rem; margin-bottom: 1.5rem;
+      border-top: 3px solid var(--primary);
+    }
+
+    /* Query input */
+    .query-wrap { position: relative; margin-bottom: 1rem; }
+    .query-input-row { display: flex; gap: .5rem; }
+    .query-input-row input {
+      flex: 1; padding: .75rem 1rem; font-size: 1rem; font-family: var(--mono);
+      border: 2px solid var(--border); border-radius: var(--radius);
+      outline: none; transition: border-color .2s; background: #fafbfd;
+    }
+    .query-input-row input:focus { border-color: var(--primary); background: white; }
+    .query-input-row input.query-error { border-color: var(--danger); }
+    .query-hint {
+      font-size: .75rem; margin-top: .4rem; padding: .4rem .75rem;
+      border-radius: var(--radius); display: none;
+    }
+    .query-hint.error { background: #fef2f2; color: var(--danger); border: 1px solid #fca5a5; display: block; }
+    .query-hint.info { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; display: block; }
+
+    .btn-search {
+      padding: .75rem 1.5rem; background: var(--primary); color: white;
+      border: none; border-radius: var(--radius); font-size: 1rem; cursor: pointer;
+      font-weight: 700; transition: background .2s; font-family: var(--sans); white-space: nowrap;
+    }
+    .btn-search:hover { background: var(--primary-light); }
+
+    /* Syntax examples */
+    .syntax-examples {
+      display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem;
+    }
+    .syntax-chip {
+      font-family: var(--mono); font-size: .72rem;
+      background: #f0f4ff; color: var(--primary); border: 1px solid #c7d8f5;
+      padding: .2rem .6rem; border-radius: 20px; cursor: pointer; transition: background .15s;
+    }
+    .syntax-chip:hover { background: var(--primary); color: white; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0; margin-bottom: 1.25rem; }
+    .tab {
+      padding: .55rem 1.2rem; background: transparent;
+      border: 1.5px solid var(--border); border-right: none;
+      cursor: pointer; font-size: .875rem; font-weight: 600;
+      color: var(--muted); transition: all .15s; font-family: var(--sans);
+    }
+    .tab:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+    .tab:last-child { border-right: 1.5px solid var(--border); border-radius: 0 var(--radius) var(--radius) 0; }
+    .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* Options grid */
+    .options-grid { display: flex; flex-wrap: wrap; gap: 1.25rem; align-items: flex-end; }
+    .option-group label {
+      display: block; font-size: .7rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: .3rem;
+    }
+    .option-group select, .option-group input[type=number] {
+      padding: .4rem .65rem; border: 1.5px solid var(--border);
+      border-radius: 6px; font-size: .85rem; background: white; font-family: var(--sans);
+      cursor: pointer;
+    }
+    .option-group select:focus, .option-group input[type=number]:focus {
+      outline: none; border-color: var(--primary);
+    }
+    .toggle-row { display: flex; gap: .75rem; align-items: center; margin-top: .15rem; }
+    .toggle-label { display: flex; align-items: center; gap: .35rem; font-size: .82rem; cursor: pointer; }
+    .toggle-label input { cursor: pointer; accent-color: var(--primary); }
+
+    /* ── RESULTS BAR ── */
+    .results-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem; font-size: .82rem; color: var(--muted);
+      flex-wrap: wrap; gap: .5rem;
+    }
+    .results-bar strong { color: var(--text); }
+    .results-bar .right-bar { display: flex; gap: .75rem; align-items: center; }
+
+    .sort-select {
+      padding: .3rem .6rem; border: 1.5px solid var(--border);
+      border-radius: 6px; font-size: .8rem; background: white; font-family: var(--sans); cursor: pointer;
+    }
+
+    /* Export bar */
+    .export-bar {
+      display: flex; gap: .4rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .export-bar span { font-size: .75rem; color: var(--muted); font-weight: 600; }
+    .btn-export {
+      padding: .25rem .65rem; border: 1.5px solid var(--border); background: white;
+      border-radius: 20px; font-size: .75rem; cursor: pointer; transition: all .15s;
+      font-family: var(--mono); font-weight: 600; color: var(--muted);
+    }
+    .btn-export:hover { border-color: var(--primary); color: var(--primary); background: #f0f4ff; }
+
+    /* ── RESULT CARD ── */
+    .result-card {
+      background: var(--card-bg); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 1.2rem 1.4rem; margin-bottom: .85rem;
+      border-left: 4px solid transparent; transition: border-color .2s, box-shadow .2s;
+    }
+    .result-card:hover { border-left-color: var(--primary); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .result-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+    .result-rank { font-size: .7rem; font-family: var(--mono); color: var(--muted); margin-bottom: .2rem; }
+    .result-title { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: .3rem; line-height: 1.35; }
+    .result-title a { color: inherit; text-decoration: none; }
+    .result-title a:hover { text-decoration: underline; }
+
+    .score-badge {
+      display: flex; flex-direction: column; align-items: center;
+      background: var(--primary); color: white;
+      padding: .3rem .7rem; border-radius: var(--radius); font-family: var(--mono);
+      font-size: .8rem; font-weight: 700; white-space: nowrap; flex-shrink: 0; gap: .1rem;
+      min-width: 54px;
+    }
+    .score-label { font-size: .55rem; opacity: .75; text-transform: uppercase; letter-spacing: .05em; font-weight: 400; }
+    .score-bar-wrap { width: 100%; height: 3px; background: rgba(255,255,255,.25); border-radius: 2px; margin-top: .2rem; }
+    .score-bar { height: 100%; background: var(--accent); border-radius: 2px; }
+
+    .result-meta { font-size: .78rem; color: var(--muted); margin: .4rem 0 .5rem; display: flex; flex-wrap: wrap; gap: .5rem .9rem; }
+    .result-meta .tag {
+      background: #f0f4ff; color: var(--primary); border: 1px solid #c7d8f5;
+      padding: .1rem .5rem; border-radius: 20px; font-size: .7rem; font-weight: 600;
+    }
+
+    /* Highlighted text */
+    mark { background: #fef08a; color: inherit; border-radius: 2px; padding: 0 1px; }
+
+    .result-abstract { font-size: .85rem; color: #374151; line-height: 1.65; }
+    .abstract-actions { display: flex; gap: .75rem; margin-top: .5rem; align-items: center; }
+    .btn-text {
+      font-size: .78rem; color: var(--primary); cursor: pointer;
+      background: none; border: none; padding: 0; font-family: var(--sans); font-weight: 600;
+    }
+    .btn-text:hover { text-decoration: underline; }
+    .btn-pdf {
+      font-size: .75rem; background: var(--success); color: white;
+      border: none; border-radius: 20px; padding: .2rem .65rem;
+      cursor: pointer; font-family: var(--sans); font-weight: 600; text-decoration: none;
+      display: inline-block;
+    }
+    .btn-pdf:hover { filter: brightness(1.1); }
+
+    /* Author links */
+    .author-link {
+      color: var(--primary-light); cursor: pointer; text-decoration: underline dotted;
+      background: none; border: none; padding: 0;
+      font: inherit; font-size: inherit;
+    }
+    .author-link:hover { color: var(--accent); }
+
+    /* Author mode */
+    .author-card {
+      background: var(--card-bg); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 1rem 1.4rem; margin-bottom: .75rem;
+      display: flex; gap: 1rem; align-items: flex-start;
+      border-left: 4px solid transparent; transition: border-left-color .2s;
+    }
+    .author-card:hover { border-left-color: var(--primary); }
+    .author-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--primary); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 1rem; flex-shrink: 0; font-family: var(--mono);
+    }
+
+    /* ── EDUCATIONAL PANEL ── */
+    .edu-section { margin-top: 1.5rem; }
+    .edu-tabs { display: flex; gap: 0; margin-bottom: 0; border-bottom: 2px solid var(--border); }
+    .edu-tab {
+      padding: .5rem 1rem; background: transparent; border: none;
+      font-size: .8rem; font-weight: 700; color: var(--muted); cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -2px; font-family: var(--sans);
+      transition: color .15s;
+    }
+    .edu-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .edu-tab:hover { color: var(--primary); }
+
+    .edu-panel {
+      background: #fafbff; border: 1px solid var(--border);
+      border-top: none; border-radius: 0 0 var(--radius) var(--radius);
+      padding: 1.25rem; font-size: .855rem; display: none;
+    }
+    .edu-panel.active { display: block; }
+    .edu-panel h4 { color: var(--primary); margin-bottom: .6rem; font-size: .9rem; }
+    .edu-panel p { color: #374151; line-height: 1.65; margin-bottom: .75rem; }
+    .edu-panel p:last-child { margin-bottom: 0; }
+
+    .formula-box {
+      background: white; border: 1.5px solid #c7d8f5; border-radius: var(--radius);
+      padding: .75rem 1rem; margin: .75rem 0; font-family: var(--mono);
+      font-size: .8rem; color: var(--primary-dark); overflow-x: auto;
+    }
+    .tfidf-demo { display: flex; gap: 1rem; flex-wrap: wrap; margin: .75rem 0; }
+    .tfidf-card {
+      background: white; border: 1px solid var(--border); border-radius: var(--radius);
+      padding: .75rem; flex: 1; min-width: 160px;
+    }
+    .tfidf-card .label { font-size: .65rem; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: .06em; margin-bottom: .25rem; }
+    .tfidf-card .value { font-family: var(--mono); font-size: 1.1rem; color: var(--primary); font-weight: 700; }
+    .tfidf-card .desc { font-size: .72rem; color: var(--muted); margin-top: .25rem; }
+
+    .bool-example {
+      background: white; border: 1px solid var(--border); border-radius: var(--radius);
+      padding: .75rem 1rem; margin: .5rem 0; font-family: var(--mono); font-size: .8rem;
+    }
+    .bool-example .query { color: var(--primary-dark); font-weight: 600; }
+    .bool-example .result { color: var(--success); margin-top: .25rem; font-size: .75rem; }
+
+    .index-demo { margin: .75rem 0; }
+    .index-row {
+      display: flex; gap: .5rem; align-items: center; margin-bottom: .35rem; font-family: var(--mono);
+      font-size: .78rem;
+    }
+    .index-term {
+      background: var(--primary); color: white; padding: .15rem .5rem;
+      border-radius: 4px; min-width: 100px; text-align: center; font-weight: 600;
+    }
+    .index-arrow { color: var(--muted); }
+    .index-postings { display: flex; gap: .3rem; flex-wrap: wrap; }
+    .posting-pill {
+      background: #f0f4ff; border: 1px solid #c7d8f5; color: var(--primary);
+      padding: .1rem .45rem; border-radius: 20px; font-size: .72rem;
+    }
+
+    /* ── COMPARE VIEW ── */
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .compare-col { background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .compare-header {
+      background: var(--primary); color: white; padding: .65rem 1rem;
+      font-size: .8rem; font-weight: 700; font-family: var(--mono);
+    }
+    .compare-result {
+      padding: .65rem 1rem; border-bottom: 1px solid var(--border);
+      font-size: .82rem; display: flex; align-items: center; gap: .6rem;
+    }
+    .compare-result:last-child { border-bottom: none; }
+    .compare-rank { font-family: var(--mono); font-size: .7rem; color: var(--muted); min-width: 20px; }
+    .compare-title { flex: 1; line-height: 1.3; }
+    .compare-score { font-family: var(--mono); font-size: .75rem; color: var(--primary); font-weight: 700; min-width: 45px; text-align: right; }
+
+    /* ── HISTORY PANEL ── */
+    .history-panel {
+      background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 1.25rem; margin-bottom: 1.5rem; display: none;
+    }
+    .history-panel.open { display: block; }
+    .history-panel h3 { font-size: .9rem; font-weight: 700; color: var(--text); margin-bottom: .75rem; }
+    .history-list { display: flex; flex-direction: column; gap: .4rem; }
+    .history-item {
+      display: flex; align-items: center; gap: .75rem; padding: .5rem .75rem;
+      background: var(--bg); border-radius: 6px; cursor: pointer;
+      transition: background .15s;
+    }
+    .history-item:hover { background: #e8eef8; }
+    .history-query { font-family: var(--mono); font-size: .82rem; color: var(--primary); flex: 1; }
+    .history-meta { font-size: .7rem; color: var(--muted); }
+    .history-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: .85rem; padding: 0 .2rem; }
+    .history-del:hover { color: var(--danger); }
+    .history-empty { color: var(--muted); font-size: .85rem; font-style: italic; }
+
+    /* ── LOADING / EMPTY ── */
+    .loading { text-align: center; padding: 3rem; color: var(--muted); }
+    .spinner {
+      display: inline-block; width: 28px; height: 28px;
+      border: 3px solid var(--border); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin .7s linear infinite; margin-bottom: .75rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty { text-align: center; padding: 3rem; color: var(--muted); font-size: .95rem; }
+    .error-msg {
+      background: #fef2f2; border: 1px solid #fca5a5;
+      color: #991b1b; padding: 1rem; border-radius: var(--radius); margin-bottom: 1rem;
+      font-size: .875rem;
+    }
+
+    /* Pagination */
+    .pagination { display: flex; justify-content: center; gap: .4rem; margin-top: 1.5rem; align-items: center; }
+    .pagination button {
+      padding: .38rem .75rem; border: 1.5px solid var(--border);
+      background: white; border-radius: 6px; cursor: pointer;
+      font-size: .82rem; transition: all .15s; font-family: var(--sans);
+    }
+    .pagination button:hover, .pagination button.active {
+      background: var(--primary); color: white; border-color: var(--primary);
+    }
+    .pagination .page-info { font-size: .78rem; color: var(--muted); padding: 0 .5rem; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.45); z-index: 1000;
+      align-items: flex-start; justify-content: center;
+      padding: 2rem 1rem; overflow-y: auto;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card-bg); border-radius: var(--radius);
+      box-shadow: var(--shadow-lg); width: 100%; max-width: 720px;
+      overflow: hidden; animation: slideIn .2s ease;
+    }
+    @keyframes slideIn { from { transform: translateY(-16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+      color: white; padding: 1.5rem;
+      display: flex; align-items: center; gap: 1.25rem;
+    }
+    .modal-avatar {
+      width: 58px; height: 58px; border-radius: 50%;
+      background: rgba(255,255,255,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; font-weight: 700; flex-shrink: 0; font-family: var(--mono);
+    }
+    .modal-author-name { font-size: 1.2rem; font-weight: 700; margin-bottom: .2rem; }
+    .modal-author-sub { font-size: .8rem; opacity: .8; font-family: var(--mono); }
+    .modal-close {
+      margin-left: auto; background: rgba(255,255,255,.15);
+      border: none; color: white; width: 30px; height: 30px;
+      border-radius: 50%; font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .modal-close:hover { background: rgba(255,255,255,.3); }
+    .modal-stats { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
+    .modal-stat { flex: 1; padding: .9rem; text-align: center; border-right: 1px solid var(--border); }
+    .modal-stat:last-child { border-right: none; }
+    .modal-stat-value { font-size: 1.4rem; font-weight: 700; color: var(--primary); font-family: var(--mono); }
+    .modal-stat-label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .modal-body { padding: 1.2rem 1.5rem; max-height: 55vh; overflow-y: auto; }
+    .modal-section-title {
+      font-size: .72rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em; margin-bottom: .7rem;
+    }
+    .modal-pub { padding: .8rem 0; border-bottom: 1px solid var(--border); }
+    .modal-pub:last-child { border-bottom: none; }
+    .modal-pub-title { font-weight: 600; color: var(--primary); margin-bottom: .2rem; font-size: .92rem; }
+    .modal-pub-title a { color: inherit; text-decoration: none; }
+    .modal-pub-title a:hover { text-decoration: underline; }
+    .modal-pub-meta { font-size: .75rem; color: var(--muted); }
+    .modal-loading { text-align: center; padding: 2rem; color: var(--muted); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .options-grid { flex-direction: column; gap: .75rem; }
+      .result-header { flex-direction: column; }
+      .compare-grid { grid-template-columns: 1fr; }
+      .modal-stats { flex-wrap: wrap; }
+      .modal-stat { min-width: 50%; }
+      header { flex-wrap: wrap; }
+      .header-right { width: 100%; justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-block">
+    <span class="logo">🔬</span>
+    <div>
+      <h1>RepositóriUM Search Engine</h1>
+      <p>Motor de Pesquisa de Publicações Científicas · Universidade do Minho</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="btn-header" id="btnHistory" onclick="toggleHistory()">📋 Histórico</button>
+    <button class="btn-header" id="btnEdu" onclick="toggleEdu()">📘 Como funciona</button>
+    <button class="btn-header" id="btnCompare" onclick="toggleCompare()">⚖️ Comparar</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- History panel -->
+  <div class="history-panel" id="historyPanel">
+    <h3>📋 Histórico de Pesquisas</h3>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+  <!-- Search card -->
+  <div class="search-card">
+
+    <!-- Query input -->
+    <div class="query-wrap">
+      <div class="query-input-row">
+        <input id="queryInput" type="text" placeholder="Pesquisar publicações..." autocomplete="off"
+               oninput="validateQuery()" onkeydown="if(event.key==='Enter') doSearch(1)"/>
+        <button class="btn-search" onclick="doSearch(1)">🔍 Pesquisar</button>
+      </div>
+      <div class="query-hint" id="queryHint"></div>
+    </div>
+
+    <!-- Syntax examples -->
+    <div class="syntax-examples" id="syntaxExamples">
+      <span style="font-size:.72rem;color:var(--muted);font-weight:700;align-self:center;">Exemplos:</span>
+    </div>
+
+    <!-- Mode tabs -->
+    <div class="tabs" id="modeTabs">
+      <button class="tab active" onclick="setMode('freetext', this)">Texto Livre</button>
+      <button class="tab" onclick="setMode('boolean', this)">Booleano</button>
+      <button class="tab" onclick="setMode('author', this)">Autor</button>
+    </div>
+
+    <!-- Freetext options -->
+    <div class="options-grid" id="freetextOptions">
+      <div class="option-group">
+        <label>Algoritmo de Ranking</label>
+        <select id="algorithm">
+          <option value="custom">TF-IDF Personalizado</option>
+          <option value="sklearn">TF-IDF Sklearn</option>
+        </select>
+      </div>
+      <div class="option-group">
+        <label>Processamento NLP</label>
+        <select id="processing">
+          <option value="stemming">Stemming (Porter)</option>
+          <option value="lemma">Lematização (WordNet)</option>
+        </select>
+      </div>
+      <div class="option-group">
+        <label>Campo de Pesquisa</label>
+        <select id="searchField">
+          <option value="all">Todos os campos</option>
+          <option value="title">Apenas título</option>
+          <option value="abstract">Apenas resumo</option>
+        </select>
+      </div>
+      <div class="option-group">
+        <label>Ano — de / até</label>
+        <div style="display:flex;gap:.4rem">
+          <input type="number" id="yearFrom" placeholder="ex: 2018" min="1990" max="2026" style="width:88px"/>
+          <input type="number" id="yearTo"   placeholder="ex: 2024" min="1990" max="2026" style="width:88px"/>
+        </div>
+      </div>
+      <div class="option-group">
+        <label>Opções de Texto</label>
+        <div class="toggle-row">
+          <label class="toggle-label"><input type="checkbox" id="stopwords" checked/> Stop words</label>
+        </div>
+      </div>
+    </div>
+  </div><!-- /search-card -->
+
+  <!-- Educational panel (collapsible) -->
+  <div id="eduSection" style="display:none; margin-bottom:1.5rem;">
+    <div class="edu-tabs">
+      <button class="edu-tab active" onclick="showEduTab('tfidf', this)">TF-IDF</button>
+      <button class="edu-tab" onclick="showEduTab('boolean', this)">Booleano</button>
+      <button class="edu-tab" onclick="showEduTab('index', this)">Índice Invertido</button>
+      <button class="edu-tab" onclick="showEduTab('nlp', this)">Pré-processamento</button>
+    </div>
+    <div class="edu-panel active" id="edu-tfidf">
+      <h4>Como funciona o TF-IDF</h4>
+      <p>O TF-IDF (Term Frequency – Inverse Document Frequency) atribui um peso a cada par (termo, documento). Termos frequentes num documento mas raros na coleção recebem pesos altos — são os mais discriminativos.</p>
+      <div class="formula-box">
+        TF(t, d)  = freq(t, d) / total_termos(d)<br>
+        IDF(t)    = log( N / df(t) )  +  1<br>
+        TF-IDF(t, d) = TF(t, d) × IDF(t)<br><br>
+        Similaridade = cosine( vec_query, vec_doc ) = (q · d) / (‖q‖ × ‖d‖)
+      </div>
+      <div class="tfidf-demo" id="tfidfLiveDemo">
+        <div class="tfidf-card"><div class="label">Termo exemplo</div><div class="value" id="demoTerm">—</div><div class="desc">da tua query</div></div>
+        <div class="tfidf-card"><div class="label">TF (por doc)</div><div class="value" id="demoTF">—</div><div class="desc">freq. no doc / total termos</div></div>
+        <div class="tfidf-card"><div class="label">IDF (real)</div><div class="value" id="demoIDF">—</div><div class="desc">log(N / df) + 1</div></div>
+        <div class="tfidf-card"><div class="label">TF-IDF</div><div class="value" id="demoScore">—</div><div class="desc">produto dos dois</div></div>
+      </div>
+      <p style="font-size:.78rem;color:var(--muted)">💡 Pesquisa com o <strong>TF-IDF Personalizado</strong> usa a nossa implementação em Python puro; a opção <strong>sklearn</strong> usa a biblioteca scikit-learn — podes comparar resultados no botão ⚖️ Comparar.</p>
+    </div>
+    <div class="edu-panel" id="edu-boolean">
+      <h4>Pesquisa Booleana com Índice Invertido</h4>
+      <p>Na pesquisa booleana cada termo é resolvido como uma lista de doc_ids (posting list). Os operadores combinam essas listas:</p>
+      <div class="bool-example"><span class="query">machine AND learning</span><span class="result">→ interseção das postings de "machine" ∩ "learning"</span></div>
+      <div class="bool-example"><span class="query">neural OR deep</span><span class="result">→ união: postings("neural") ∪ postings("deep")</span></div>
+      <div class="bool-example"><span class="query">machine NOT neural</span><span class="result">→ diferença: postings("machine") \ postings("neural")</span></div>
+      <div class="bool-example"><span class="query">(neural OR deep) AND learning</span><span class="result">→ parênteses têm prioridade; NOT > AND > OR</span></div>
+      <p>A interseção é optimizada com <strong>skip pointers</strong>: ao percorrer as postings, ponteiros de salto (espaçados por √n) permitem saltar blocos, reduzindo comparações de O(n) para O(√n) no melhor caso.</p>
+    </div>
+    <div class="edu-panel" id="edu-index">
+      <h4>Estrutura do Índice Invertido</h4>
+      <p>Para cada termo único da coleção, o índice guarda a sua <em>posting list</em>: a lista de documentos onde aparece, com a frequência (TF) e as posições no texto.</p>
+      <div class="index-demo" id="indexLiveDemo">
+        <div class="index-row"><span class="index-term">learning</span><span class="index-arrow">→</span><div class="index-postings"><span class="posting-pill">doc_2 (tf=4)</span><span class="posting-pill">doc_5 (tf=2)</span><span class="posting-pill">doc_9 (tf=1)</span><span class="posting-pill">doc_12 (tf=3)</span></div></div>
+        <div class="index-row"><span class="index-term">neural</span><span class="index-arrow">→</span><div class="index-postings"><span class="posting-pill">doc_1 (tf=6)</span><span class="posting-pill">doc_5 (tf=1)</span><span class="posting-pill">doc_7 (tf=2)</span></div></div>
+        <div class="index-row"><span class="index-term">retrieval</span><span class="index-arrow">→</span><div class="index-postings"><span class="posting-pill">doc_3 (tf=5)</span><span class="posting-pill">doc_8 (tf=2)</span><span class="posting-pill">doc_11 (tf=1)</span></div></div>
+      </div>
+      <p>O índice suporta <strong>atualizações incrementais</strong> — novos documentos podem ser indexados sem reconstruir tudo — e persiste em JSON para recarregamento rápido.</p>
+    </div>
+    <div class="edu-panel" id="edu-nlp">
+      <h4>Pré-processamento de Texto (NLP)</h4>
+      <p>Antes de indexar ou pesquisar, o texto passa por um pipeline configurável:</p>
+      <div class="formula-box">
+        "Running neural networks efficiently"<br>
+        → tokenização:  ["Running","neural","networks","efficiently"]<br>
+        → lowercase:    ["running","neural","networks","efficiently"]<br>
+        → stop words:   ["running","neural","networks","efficiently"]  (nenhuma removida)<br>
+        → stemming:     ["run","neural","network","effici"]<br>
+        → lematização:  ["run","neural","network","efficiently"]
+      </div>
+      <p><strong>Stemming (Porter)</strong> corta sufixos de forma agressiva e rápida — "studies" → "studi". <strong>Lematização (WordNet)</strong> é mais lenta mas produz raízes reais — "studies" → "study". Podes escolher o modo no painel de opções.</p>
+      <div id="nlpTokensLive" style="margin-top:.75rem;padding:.75rem;background:var(--accent-light);border-radius:var(--radius);font-size:.82rem;min-height:2rem;">
+        <span style="color:var(--muted)">Faz uma pesquisa para ver o pipeline aplicado à tua query.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compare view (collapsible) -->
+  <div id="compareSection" style="display:none; margin-bottom:1.5rem;">
+    <div style="background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.25rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <div>
+          <strong style="font-size:.9rem">⚖️ Comparação de Algoritmos</strong>
+          <span style="font-size:.75rem;color:var(--muted);margin-left:.75rem" id="compareQueryLabel"></span>
+        </div>
+        <button class="btn-text" onclick="runCompare()" id="btnRunCompare" style="font-size:.8rem;border:1.5px solid var(--border);padding:.3rem .75rem;border-radius:6px;">
+          Comparar agora
+        </button>
+      </div>
+      <div id="compareResults">
+        <p style="color:var(--muted);font-size:.85rem;font-style:italic">Faz uma pesquisa e clica em "Comparar agora" para ver a diferença entre TF-IDF Personalizado e sklearn.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results area -->
+  <div id="resultsArea"></div>
+
+</main>
+
+<!-- Author modal -->
+<div class="modal-overlay" id="authorModal" onclick="closeAuthorModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-avatar" id="modalAvatar">?</div>
+      <div>
+        <div class="modal-author-name" id="modalName">—</div>
+        <div class="modal-author-sub" id="modalSub">A carregar…</div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('authorModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-stats" id="modalStats"></div>
+    <div class="modal-body" id="modalBody"><div class="modal-loading"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<script>
+  // ── CONFIG ──
+  const API = 'http://localhost:8000';
+  let currentMode = 'freetext';
+  let currentPage = 1;
+  let lastQuery = '';
+  let lastResults = [];
+  let lastTotal = 0;
+  const PAGE_SIZE = 10;
+
+  const SYNTAX_EXAMPLES = {
+    freetext: ['machine learning', 'deep learning', 'natural language processing', 'information retrieval', 'neural networks'],
+    boolean: ['machine AND learning', 'neural OR deep', '(retrieval OR search) AND information', 'machine NOT neural', 'deep AND learning NOT supervised'],
+    author: ['Silva', 'João Fernandes', 'Costa', 'Carvalho']
+  };
+
+  // ── HISTORY ──
+  let searchHistory = JSON.parse(sessionStorage.getItem('srch_history') || '[]');
+
+  function saveHistory(query, mode, total, time) {
+    const entry = { query, mode, total, time, ts: Date.now() };
+    searchHistory = [entry, ...searchHistory.filter(h => h.query !== query || h.mode !== mode)].slice(0, 20);
+    sessionStorage.setItem('srch_history', JSON.stringify(searchHistory));
+    renderHistoryList();
+  }
+
+  function renderHistoryList() {
+    const list = document.getElementById('historyList');
+    if (!searchHistory.length) {
+      list.innerHTML = '<div class="history-empty">Nenhuma pesquisa ainda.</div>'; return;
+    }
+    list.innerHTML = searchHistory.map((h, i) => `
+      <div class="history-item" onclick="restoreSearch(${i})">
+        <span class="history-query">${escHtml(h.query)}</span>
+        <span class="history-meta">${getModeLabel(h.mode)} · ${h.total} res. · ${h.time}ms</span>
+        <button class="history-del" onclick="deleteHistory(event,${i})" title="Remover">✕</button>
+      </div>`).join('');
+  }
+
+  function restoreSearch(i) {
+    const h = searchHistory[i];
+    document.getElementById('queryInput').value = h.query;
+    // set mode
+    const tabs = document.querySelectorAll('.tab');
+    const idx = ['freetext','boolean','author'].indexOf(h.mode);
+    if (idx >= 0) setMode(h.mode, tabs[idx]);
+    doSearch(1);
+  }
+
+  function deleteHistory(e, i) {
+    e.stopPropagation();
+    searchHistory.splice(i, 1);
+    sessionStorage.setItem('srch_history', JSON.stringify(searchHistory));
+    renderHistoryList();
+  }
+
+  function toggleHistory() {
+    const panel = document.getElementById('historyPanel');
+    const btn = document.getElementById('btnHistory');
+    const open = panel.classList.toggle('open');
+    btn.classList.toggle('active-view', open);
+    if (open) renderHistoryList();
+  }
+
+  function toggleEdu() {
+    const sec = document.getElementById('eduSection');
+    const btn = document.getElementById('btnEdu');
+    const open = sec.style.display === 'none';
+    sec.style.display = open ? 'block' : 'none';
+    btn.classList.toggle('active-view', open);
+  }
+
+  function toggleCompare() {
+    const sec = document.getElementById('compareSection');
+    const btn = document.getElementById('btnCompare');
+    const open = sec.style.display === 'none';
+    sec.style.display = open ? 'block' : 'none';
+    btn.classList.toggle('active-view', open);
+    document.getElementById('compareQueryLabel').textContent = lastQuery ? `— "${lastQuery}"` : '';
+  }
+
+  function showEduTab(id, btn) {
+    document.querySelectorAll('.edu-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.edu-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('edu-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ── MODE & EXAMPLES ──
+  function setMode(mode, btn) {
+    currentMode = mode;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const opts = document.getElementById('freetextOptions');
+    opts.style.display = mode === 'freetext' ? 'flex' : 'none';
+    const input = document.getElementById('queryInput');
+    const placeholders = {
+      freetext: 'Pesquisar publicações... ex: machine learning, deep neural network',
+      boolean:  'Ex: machine AND learning NOT neural, (deep OR recurrent) AND network',
+      author:   'Nome do autor (parcial aceite) · ex: Silva, João Costa'
+    };
+    input.placeholder = placeholders[mode];
+    renderSyntaxExamples(mode);
+    validateQuery();
+  }
+
+  function renderSyntaxExamples(mode) {
+    const row = document.getElementById('syntaxExamples');
+    const chips = SYNTAX_EXAMPLES[mode].map(ex =>
+      `<span class="syntax-chip" onclick="useExample('${escJs(ex)}')">${escHtml(ex)}</span>`
+    ).join('');
+    row.innerHTML = `<span style="font-size:.72rem;color:var(--muted);font-weight:700;align-self:center;">Exemplos:</span>${chips}`;
+  }
+
+  function useExample(ex) {
+    document.getElementById('queryInput').value = ex;
+    validateQuery();
+    doSearch(1);
+  }
+
+  // ── QUERY VALIDATION ──
+  function validateQuery() {
+    const q = document.getElementById('queryInput').value.trim();
+    const hint = document.getElementById('queryHint');
+    const input = document.getElementById('queryInput');
+
+    if (!q) { hint.className = 'query-hint'; input.classList.remove('query-error'); return; }
+
+    if (currentMode === 'boolean') {
+      // Check unbalanced parens
+      let depth = 0;
+      for (const ch of q) { if (ch === '(') depth++; else if (ch === ')') depth--; if (depth < 0) break; }
+      if (depth !== 0) {
+        hint.textContent = '⚠ Parênteses não balanceados — verifica a query.';
+        hint.className = 'query-hint error'; input.classList.add('query-error'); return;
+      }
+      // Warn about AND/OR adjacent
+      if (/\b(AND|OR|NOT)\s+(AND|OR|NOT)\b/i.test(q)) {
+        hint.textContent = '⚠ Dois operadores consecutivos detectados — ex: "AND AND" pode não ser válido.';
+        hint.className = 'query-hint error'; input.classList.add('query-error'); return;
+      }
+      // Hint: implicit AND
+      if (!/\b(AND|OR|NOT)\b/i.test(q) && q.includes(' ')) {
+        hint.textContent = '💡 Termos separados por espaço são tratados como AND implícito.';
+        hint.className = 'query-hint info'; input.classList.remove('query-error'); return;
+      }
+    }
+
+    hint.className = 'query-hint';
+    input.classList.remove('query-error');
+  }
+
+  // ── SEARCH ──
+  async function doSearch(page) {
+    const q = document.getElementById('queryInput').value.trim();
+    if (!q) return;
+
+    currentPage = page;
+    lastQuery = q;
+
+    const area = document.getElementById('resultsArea');
+    area.innerHTML = `<div class="loading"><div class="spinner"></div><br/>A pesquisar…</div>`;
+
+    const t0 = performance.now();
+
+    try {
+      let url;
+      if (currentMode === 'boolean') {
+        url = `${API}/search/boolean?q=${encodeURIComponent(q)}&top_k=100`;
+      } else if (currentMode === 'author') {
+        url = `${API}/search/author?name=${encodeURIComponent(q)}&top_k=100`;
+      } else {
+        const algo   = document.getElementById('algorithm').value;
+        const stopw  = document.getElementById('stopwords').checked;
+        const stem   = document.getElementById('processing').value === 'stemming';
+        const yFrom  = document.getElementById('yearFrom').value;
+        const yTo    = document.getElementById('yearTo').value;
+        const field  = document.getElementById('searchField').value;
+        url = `${API}/search?q=${encodeURIComponent(q)}&algorithm=${algo}&use_stemming=${stem}&remove_stopwords=${stopw}&top_k=100&field=${field}`;
+        if (yFrom) url += `&year_from=${yFrom}`;
+        if (yTo)   url += `&year_to=${yTo}`;
+      }
+
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+
+      const elapsed = Math.round(performance.now() - t0);
+      lastResults = data.results || [];
+      lastTotal   = data.total;
+
+      saveHistory(q, currentMode, data.total, elapsed);
+      updateTFIDFDemo(q);
+      renderResults(data, q, elapsed);
+      document.getElementById('compareQueryLabel').textContent = `— "${q}"`;
+
+    } catch (err) {
+      area.innerHTML = `<div class="error-msg">⚠️ Erro ao conectar à API: ${err.message}<br/><small>Certifique-se que o servidor FastAPI está a correr em <code>${API}</code></small></div>`;
+    }
+  }
+
+  // ── TFIDF LIVE DEMO (dados reais via /explain) ──
+  async function updateTFIDFDemo(query) {
+    try {
+      const resp = await fetch(`${API}/explain?q=${encodeURIComponent(query)}`);
+      if (!resp.ok) return;
+      const data = await resp.json();
+
+      // --- aba TF-IDF: mostrar o 1.º termo com maior IDF ---
+      const terms = data.term_details || [];
+      if (terms.length > 0) {
+        const best = terms.reduce((a, b) => b.idf > a.idf ? b : a, terms[0]);
+        document.getElementById('demoTerm').textContent  = best.original_term;
+        document.getElementById('demoTF').textContent    = '—';
+        document.getElementById('demoIDF').textContent   = best.idf;
+        document.getElementById('demoScore').textContent = '—';
+
+        // Actualizar labels
+        const tfCard  = document.getElementById('demoTF').previousElementSibling;
+        const idfCard = document.getElementById('demoIDF').previousElementSibling;
+        if (tfCard)  tfCard.textContent  = 'TF (por doc)';
+        if (idfCard) idfCard.textContent = 'IDF (real)';
+      }
+
+      // --- aba Pré-processamento: mostrar pipeline real ---
+      const tokensEl = document.getElementById('nlpTokensLive');
+      if (tokensEl) {
+        const pills = data.tokens.map(t =>
+          `<span class="posting-pill" style="background:var(--accent-light);color:var(--primary-dark)">${t}</span>`
+        ).join(' ');
+        tokensEl.innerHTML = `
+          <div style="margin-bottom:.4rem;font-size:.78rem;color:var(--muted)">
+            Query: <strong>"${data.query}"</strong> → ${data.tokens.length} token(s) após processamento
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:.3rem">${pills}</div>`;
+      }
+
+      // --- aba Índice Invertido: mostrar postings reais ---
+      const indexDemo = document.getElementById('indexLiveDemo');
+      if (indexDemo && terms.length > 0) {
+        const rows = terms.slice(0, 5).map(t => {
+          const pills = t.sample_doc_ids.map(id =>
+            `<span class="posting-pill">doc_${id} (df=${t.doc_frequency})</span>`
+          ).join('');
+          return `<div class="index-row">
+            <span class="index-term">${t.original_term}</span>
+            <span class="index-arrow">→</span>
+            <div class="index-postings">${pills || '<span style="color:var(--muted);font-size:.78rem">sem ocorrências</span>'}</div>
+          </div>`;
+        }).join('');
+        indexDemo.innerHTML = rows;
+      }
+
+    } catch (_) {
+      // /explain indisponível — manter valores anteriores
+    }
+  }
+
+  // ── COMPARE ──
+  async function runCompare() {
+    if (!lastQuery || currentMode !== 'freetext') {
+      document.getElementById('compareResults').innerHTML =
+        '<p style="color:var(--muted);font-size:.85rem">Faz uma pesquisa em modo Texto Livre primeiro.</p>';
+      return;
+    }
+    const q = lastQuery;
+    document.getElementById('compareResults').innerHTML = `<div class="loading" style="padding:1.5rem"><div class="spinner"></div></div>`;
+
+    try {
+      const [r1, r2] = await Promise.all([
+        fetch(`${API}/search?q=${encodeURIComponent(q)}&algorithm=custom&use_stemming=true&top_k=10`).then(r => r.json()),
+        fetch(`${API}/search?q=${encodeURIComponent(q)}&algorithm=sklearn&use_stemming=true&top_k=10`).then(r => r.json())
+      ]);
+
+      const col = (label, results) => {
+        const rows = (results || []).slice(0, 8).map((r, i) => `
+          <div class="compare-result">
+            <span class="compare-rank">#${i+1}</span>
+            <span class="compare-title">${escHtml((r.title || '').substring(0, 65))}${(r.title||'').length > 65 ? '…' : ''}</span>
+            <span class="compare-score">${(r.score * 100).toFixed(1)}%</span>
+          </div>`).join('');
+        return `<div class="compare-col"><div class="compare-header">${label}</div>${rows || '<div style="padding:1rem;color:var(--muted);font-size:.82rem">Sem resultados</div>'}</div>`;
+      };
+
+      document.getElementById('compareResults').innerHTML =
+        `<div class="compare-grid">${col('TF-IDF Personalizado', r1.results)}${col('TF-IDF Sklearn', r2.results)}</div>`;
+    } catch (err) {
+      document.getElementById('compareResults').innerHTML = `<p style="color:var(--danger);font-size:.85rem">Erro: ${err.message}</p>`;
+    }
+  }
+
+  // ── HIGHLIGHT ──
+  function highlightTerms(text, query) {
+    if (!text || !query) return escHtml(text);
+    const terms = query.replace(/\b(AND|OR|NOT)\b/gi, '').split(/\s+/).filter(t => t.length > 2);
+    let escaped = escHtml(text);
+    terms.forEach(t => {
+      const re = new RegExp(`(${t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+      escaped = escaped.replace(re, '<mark>$1</mark>');
+    });
+    return escaped;
+  }
+
+  // ── SORT ──
+  function sortResults(results, by) {
+    const copy = [...results];
+    if (by === 'date_desc') copy.sort((a, b) => (parseInt(b.year)||0) - (parseInt(a.year)||0));
+    else if (by === 'date_asc') copy.sort((a, b) => (parseInt(a.year)||0) - (parseInt(b.year)||0));
+    else if (by === 'title') copy.sort((a, b) => (a.title||'').localeCompare(b.title||''));
+    // default: relevance (keep original order)
+    return copy;
+  }
+
+  function onSortChange(sel) {
+    if (!lastResults.length) return;
+    const sorted = sortResults(lastResults, sel.value);
+    renderResultsPage(sorted, lastQuery, lastTotal);
+  }
+
+  // ── EXPORT ──
+  function exportResults(fmt) {
+    if (!lastResults.length) { alert('Faz uma pesquisa primeiro.'); return; }
+    let content, filename, mime;
+
+    if (fmt === 'json') {
+      content = JSON.stringify(lastResults, null, 2);
+      filename = `repositorium_${lastQuery.replace(/\s+/g,'_')}.json`;
+      mime = 'application/json';
+    } else if (fmt === 'csv') {
+      const header = 'title,authors,year,doi,score,url';
+      const rows = lastResults.map(r =>
+        [r.title, (r.authors||[]).join('; '), r.year, r.doi, r.score, r.document_link]
+          .map(v => `"${String(v||'').replace(/"/g,'""')}"`)
+          .join(',')
+      );
+      content = [header, ...rows].join('\n');
+      filename = `repositorium_${lastQuery.replace(/\s+/g,'_')}.csv`;
+      mime = 'text/csv';
+    } else if (fmt === 'bibtex') {
+      content = lastResults.map((r, i) => {
+        const key = (r.authors?.[0]||'Author').split(/\s/)[0] + (r.year||'0') + String(i);
+        const authors = (r.authors||[]).join(' and ');
+        return `@article{${key},\n  title={${r.title||''}},\n  author={${authors}},\n  year={${r.year||''}},\n  doi={${r.doi||''}}\n}`;
+      }).join('\n\n');
+      filename = `repositorium_${lastQuery.replace(/\s+/g,'_')}.bib`;
+      mime = 'text/plain';
+    }
+
+    const blob = new Blob([content], { type: mime });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+  }
+
+  // ── RENDER ──
+  function renderResults(data, query, elapsed) {
+    const sorted = sortResults(data.results || [], 'relevance');
+    lastResults = sorted;
+    renderResultsPage(sorted, query, data.total, elapsed);
+  }
+
+  function renderResultsPage(results, query, total, elapsed) {
+    const area = document.getElementById('resultsArea');
+    if (!total) {
+      area.innerHTML = `<div class="empty">🔍 Nenhum resultado para "<strong>${escHtml(query)}</strong>"</div>`;
+      return;
+    }
+
+    const pageItems = results.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+
+    let html = `
+      <div class="results-bar">
+        <div>Encontrados <strong>${total}</strong> resultado${total !== 1 ? 's' : ''} para "<strong>${escHtml(query)}</strong>"
+          ${elapsed !== undefined ? `<span style="color:var(--muted);font-weight:400"> · ${elapsed}ms</span>` : ''}
+        </div>
+        <div class="right-bar">
+          <span>Ordenar:</span>
+          <select class="sort-select" onchange="onSortChange(this)">
+            <option value="relevance">Relevância</option>
+            <option value="date_desc">Data (recente)</option>
+            <option value="date_asc">Data (antiga)</option>
+            <option value="title">Título (A-Z)</option>
+          </select>
+        </div>
+      </div>
+      <div class="export-bar">
+        <span>Exportar:</span>
+        <button class="btn-export" onclick="exportResults('json')">JSON</button>
+        <button class="btn-export" onclick="exportResults('csv')">CSV</button>
+        <button class="btn-export" onclick="exportResults('bibtex')">BibTeX</button>
+      </div>`;
+
+    if (currentMode === 'author') {
+      pageItems.forEach(r => {
+        const initials = (r.authors[0]||'A').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+        html += `<div class="author-card">
+          <div class="author-avatar">${initials}</div>
+          <div>
+            <div style="font-weight:700;color:var(--primary);margin-bottom:.25rem">
+              <button class="author-link" style="font-weight:700;font-size:1rem" onclick="openAuthorProfile('${escJs(r.authors[0]||'')}')">
+                ${escHtml(r.authors[0]||'Autor desconhecido')}
+              </button>
+            </div>
+            <div style="font-size:.875rem;margin-bottom:.25rem">${escHtml(r.title)}</div>
+            <div class="result-meta"><span>📅 ${r.year}</span></div>
+            ${r.document_link && r.document_link !== 'N/A' ? `<a class="btn-pdf" href="${r.document_link}" target="_blank">📄 Ver publicação</a>` : ''}
+          </div>
+        </div>`;
+      });
+    } else {
+      pageItems.forEach((r, i) => {
+        const globalI = (currentPage - 1) * PAGE_SIZE + i;
+        const abstract = r.abstract && r.abstract !== 'N/A' ? r.abstract : '';
+        const shortAbs = abstract.length > 280 ? abstract.substring(0, 280) + '…' : abstract;
+        const scoreVal = (r.score * 100).toFixed(1);
+        const authorsHtml = (Array.isArray(r.authors) ? r.authors : [r.authors||'N/A'])
+          .map(a => `<button class="author-link" onclick="openAuthorProfile('${escJs(a)}')">${escHtml(a)}</button>`)
+          .join('; ');
+
+        html += `<div class="result-card">
+          <div class="result-header">
+            <div style="flex:1">
+              <div class="result-rank">#${globalI + 1}</div>
+              <div class="result-title">
+                ${r.document_link && r.document_link !== 'N/A'
+                  ? `<a href="${r.document_link}" target="_blank">${highlightTerms(r.title, query)}</a>`
+                  : highlightTerms(r.title, query)}
+              </div>
+            </div>
+            <div class="score-badge">
+              <span>${scoreVal}%</span>
+              <span class="score-label">score</span>
+              <div class="score-bar-wrap"><div class="score-bar" style="width:${Math.min(100, parseFloat(scoreVal))}%"></div></div>
+            </div>
+          </div>
+          <div class="result-meta">
+            <span>👤 ${authorsHtml}</span>
+            <span>📅 ${r.year||'—'}</span>
+            ${r.doi && r.doi !== 'N/A' ? `<span class="tag">DOI: ${escHtml(r.doi)}</span>` : ''}
+          </div>
+          ${shortAbs ? `
+            <div class="result-abstract" id="abs_${globalI}">${highlightTerms(shortAbs, query)}</div>
+            <div class="abstract-actions">
+              ${abstract.length > 280 ? `<button class="btn-text" onclick="toggleAbstract(${globalI}, \`${escJs(abstract)}\`, \`${escJs(query)}\`)">Mostrar mais ▼</button>` : ''}
+              ${r.document_link && r.document_link !== 'N/A' ? `<a class="btn-pdf" href="${r.document_link}" target="_blank">📄 PDF</a>` : ''}
+            </div>` : (r.document_link && r.document_link !== 'N/A' ? `<div class="abstract-actions"><a class="btn-pdf" href="${r.document_link}" target="_blank">📄 PDF</a></div>` : '')}
+        </div>`;
+      });
+    }
+
+    // Pagination
+    if (totalPages > 1) {
+      html += '<div class="pagination">';
+      if (currentPage > 1) html += `<button onclick="doSearch(${currentPage-1})">‹</button>`;
+      for (let p = Math.max(1, currentPage-2); p <= Math.min(totalPages, currentPage+2); p++) {
+        html += `<button class="${p===currentPage?'active':''}" onclick="doSearch(${p})">${p}</button>`;
+      }
+      if (currentPage < totalPages) html += `<button onclick="doSearch(${currentPage+1})">›</button>`;
+      html += `<span class="page-info">página ${currentPage} / ${totalPages}</span>`;
+      html += '</div>';
+    }
+
+    area.innerHTML = html;
+  }
+
+  function toggleAbstract(i, fullText, query) {
+    const el  = document.getElementById(`abs_${i}`);
+    const btn = el.nextElementSibling?.querySelector('.btn-text');
+    if (!btn) return;
+    if (btn.textContent.includes('▼')) {
+      el.innerHTML = highlightTerms(fullText, query);
+      btn.textContent = 'Mostrar menos ▲';
+    } else {
+      el.innerHTML = highlightTerms(fullText.substring(0, 280) + '…', query);
+      btn.textContent = 'Mostrar mais ▼';
+    }
+  }
+
+  // ── AUTHOR MODAL ──
+  async function openAuthorProfile(authorName) {
+    const modal = document.getElementById('authorModal');
+    const initials = authorName.split(/[\s,]+/).filter(Boolean).map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    document.getElementById('modalAvatar').textContent = initials;
+    document.getElementById('modalName').textContent   = authorName;
+    document.getElementById('modalSub').textContent    = 'A carregar publicações…';
+    document.getElementById('modalStats').innerHTML    = '';
+    document.getElementById('modalBody').innerHTML     = '<div class="modal-loading"><div class="spinner"></div></div>';
+    modal.classList.add('open');
+
+    try {
+      const resp = await fetch(`${API}/search/author?name=${encodeURIComponent(authorName)}&top_k=100`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      const pubs = data.results || [];
+      const total = pubs.length;
+      const years = pubs.map(p => parseInt(p.year)).filter(y => !isNaN(y));
+      const coauthors = new Set();
+      pubs.forEach(p => (p.authors||[]).forEach(a => { if (a !== authorName) coauthors.add(a); }));
+
+      document.getElementById('modalSub').textContent = `${total} publicação${total !== 1 ? 'ões' : ''} encontrada${total !== 1 ? 's' : ''}`;
+      document.getElementById('modalStats').innerHTML = `
+        <div class="modal-stat"><div class="modal-stat-value">${total}</div><div class="modal-stat-label">Publicações</div></div>
+        <div class="modal-stat"><div class="modal-stat-value">${years.length ? Math.min(...years)+'–'+Math.max(...years) : '—'}</div><div class="modal-stat-label">Período</div></div>
+        <div class="modal-stat"><div class="modal-stat-value">${coauthors.size}</div><div class="modal-stat-label">Co-autores</div></div>`;
+
+      if (!total) { document.getElementById('modalBody').innerHTML = '<div class="modal-loading">Nenhuma publicação encontrada.</div>'; return; }
+
+      const sorted = [...pubs].sort((a, b) => (parseInt(b.year)||0) - (parseInt(a.year)||0));
+      let html = `<div class="modal-section-title">📄 Publicações (${total})</div>`;
+      sorted.forEach(p => {
+        const coAuth = (p.authors||[]).filter(a => a !== authorName).join(', ');
+        html += `<div class="modal-pub">
+          <div class="modal-pub-title">
+            ${p.document_link && p.document_link !== 'N/A'
+              ? `<a href="${p.document_link}" target="_blank">${escHtml(p.title)}</a>`
+              : escHtml(p.title)}
+          </div>
+          <div class="modal-pub-meta">
+            📅 ${p.year}
+            ${coAuth ? ` · com ${escHtml(coAuth)}` : ''}
+            ${p.doi && p.doi !== 'N/A' ? ` · <span style="font-family:var(--mono)">DOI: ${escHtml(p.doi)}</span>` : ''}
+          </div>
+        </div>`;
+      });
+
+      if (coauthors.size > 0) {
+        html += `<div class="modal-section-title" style="margin-top:1.25rem">👥 Co-autores frequentes</div>`;
+        html += '<div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem">';
+        [...coauthors].slice(0, 12).forEach(ca => {
+          html += `<button class="author-link" style="border:1px solid var(--border);border-radius:20px;padding:.2rem .65rem;font-size:.78rem;"
+            onclick="openAuthorProfile('${escJs(ca)}')">${escHtml(ca)}</button>`;
+        });
+        html += '</div>';
+      }
+      document.getElementById('modalBody').innerHTML = html;
+    } catch (err) {
+      document.getElementById('modalBody').innerHTML = `<div class="modal-loading">⚠️ Erro: ${err.message}</div>`;
+    }
+  }
+
+  function closeAuthorModal(e) {
+    if (e.target === document.getElementById('authorModal'))
+      document.getElementById('authorModal').classList.remove('open');
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.getElementById('authorModal').classList.remove('open');
+  });
+
+  // ── HELPERS ──
+  function getModeLabel(m) {
+    return { freetext: 'Texto Livre', boolean: 'Booleano', author: 'Autor' }[m || currentMode] || '?';
+  }
+  function escHtml(str) {
+    return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function escJs(str) {
+    return String(str||'').replace(/`/g,'\\`').replace(/\$/g,'\\$').replace(/'/g,"\\'");
+  }
+
+  // ── INIT ──
+  renderSyntaxExamples('freetext');
+  renderHistoryList();
+</script>
+</body>
+</html>
