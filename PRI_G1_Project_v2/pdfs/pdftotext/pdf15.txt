@@ -1,0 +1,495 @@
+Contributos para promover a adequação de uma
+abordagem baseada em serviços para o RSE
+Contributions to promote the adequacy of an
+approach based on services to EHR
+Luís Mendes Gomes, Hélia Guerra, Nuno Bem
+
+Carmen Andrade
+
+Departamento de Matemática, Universidade dos Açores
+CCTC, Universidade do Minho
+Portugal
+{lmg,helia}@uac.pt
+
+Escola Superior de Enfermagem de Ponta Delgada
+Universidade dos Açores
+Portugal
+candrade@uac.pt
+
+Resumo— Há muitas aspetos a considerar no desenvolvimento de
+um sistema de informação para gerir um registo de saúde
+eletrónico (RSE), de forma a que seja útil para vários tipos de
+utilizadores e entidades e departamentos dos serviços de saúde.
+E, assim, deve ser flexível para atender a um conjunto alargado
+de necessidades e cobrir uma vasta gama de domínios clínicos e
+não clínicos na saúde. Neste artigo descrevemos um sistema
+regional de saúde, numa perspetiva de ilustrar um sistema
+distribuído e heterogéneo de saúde, para discutir a adequação da
+adoção do modelo Triple Helix, numa proposta de arquitetura e
+governança orientada aos serviços, baseada no OpenEHR.
+
+integração de dados, previamente armazenados nos sistemas
+existentes, em conformidade com a arquitetura do OpenEHR
+(Open Electronic Health Record) [2]. O OpenEHR é uma
+norma CEN e ISO de arquitetura de informação aberta que
+descreve o armazenamento, a validação e a troca de registos de
+saúde eletrónicos com o objetivo de alcançar / promover a
+interoperabilidade semântica. Esta norma segue uma
+abordagem rigorosa, baseada em arquétipos e templates, na
+construção do modelo do conhecimento, tendo como princípio
+a separação dos níveis de conhecimento da informação,
+adicionando dinamicamente novas regras de negócio, e
+redefinindo o modelo de conhecimento sem considerar a
+implementação.
+
+Palavras-Chave
+Registo
+de
+Saúde
+interoperabilidade; OpenEHR; Triple Helix; SOA
+
+Electrónico;
+
+Abstract — There are many issues to consider when we develop
+an information system for managing the electronic health record
+(EHR). It must be useful for several types of users, entities and
+departments of health services. Also, it must be flexible to meet a
+broad set of needs and cover a wide range of clinical and nonclinical areas in health. In this paper we describe a regional
+healthcare system, having in mind to illustrate a distributed,
+heterogeneous healthcare system, and then to discuss the
+suitability of the Triple Helix model for governance in a serviceoriented architecture context, following the OpenEHR.
+Keywords-EHR;interoperability;OpenEHR;Triple Helix;SOA
+
+I.
+
+INTRODUÇÃO
+
+A partilha de registos de saúde de um cidadão, entre
+diferentes organizações de saúde, nacionais ou transnacionais,
+pode conduzir a uma prestação de cuidados de saúde mais
+eficiente e eficaz, devido à disponibilidade da informação no
+momento e no local onde é necessária. Vários países têm
+desenvolvido projetos com este objetivo, nomeadamente:
+Austrália, Áustria, Canadá, Dinamarca, Hong Kong, Índia,
+Holanda, Singapura, Suécia, Tailândia, Reino Unido e Estados
+Unidos [1]. Estes projetos promovem a coordenação entre as
+fontes de informação de saúde, em unidades de prestação de
+cuidados de saúde sediadas em vários pontos do território do
+respetivo estado, e o governo desse estado. E algumas incluem
+o desenvolvimento de normas nacionais de e-saúde e a
+definição dos requisitos de uma infraestrutura para migração e
+
+A Comissão Europeia (CE) pretendia que os estados
+membros prosseguissem a aplicação da Diretiva 2011/24/UE
+[3] até 2013, relativa ao exercício dos direitos dos cidadãos da
+União Europeia (UE) em cuidados de saúde transfronteiriços
+neste espaço. E, até 2015, pretende que o desenvolvimento da
+interoperabilidade global dos sistemas de saúde europeus seja
+uma realidade [4]. Neste sentido, é necessário reunir esforços
+que passam, entre outros, pela legislação sobre os aspetos
+jurídicos e de proteção de dados, e a utilização de normas
+internacionais para a normalização da informação de saúde
+individual e a sua partilha. A CE considera que a normalização
+facilita o desenvolvimento tecnológico e tem grande
+importância económica, permitindo criar economias de escala,
+acelerar a inovação e difusão de novos produtos e serviços,
+reduzir os custos com equipamentos e aumentar a
+competitividade de empresas, industrias e regiões. Na UE a
+caracterização da informação associada aos cuidados de saúde
+tem obedecido a normas e modelos diversos definidos para
+contextos restritos e específicos e, por vezes, incompatíveis.
+Esta diversidade traduz-se numa dificuldade na prestação de
+cuidados de saúde transfronteiriços, podendo gerar riscos para
+a saúde do cidadão, uma vez que a interoperabilidade dos
+sistemas não está assegurada. Para dar cumprimento à
+recomendação é necessário que cada estado membro contribua
+com a implementação do seu sistema de informação na saúde
+(SIS) no sentido de assegurar a interoperabilidade global dos
+sistemas de saúde da UE [4]. Para conseguir a
+
+interoperabilidade transfronteiriça dos sistemas de RSE,
+recomenda-se que os estados-membros que se empenhem
+política e estrategicamente na implantação a nível local,
+regional e nacional de sistemas RSE que sejam também
+capazes de interoperar com os sistemas RSE, de outros estadosmembros [4]. Apesar de não haver qualquer diretiva da UE
+para a normalização do RSE, nem uma diretiva para a
+integração com o OpenEHR, alguns dos seus estados membros
+supracitados, desenvolvem projetos com estes propósitos.
+Segundo a HIMSS [5], a interoperabilidade é a capacidade
+de diferentes sistemas comunicarem, trocarem dados, e
+utilizarem informações, em três níveis: fundacional, estrutural e
+semântico. A troca de dados e normas deve permitir a partilha e
+colaboração entre os diferentes profissionais de saúde e a várias
+valências das instituições de saúde, independentemente da
+aplicação ou fornecedor da aplicação. Em consequência, os SIS
+podem trabalhar colaborativamente, dentro e através das
+fronteiras organizacionais, de forma a tornar a prestação de
+cuidados de saúde mais eficiente e eficaz para cidadãos e
+comunidades.
+Em [6] é reconhecido que o RSE contribui
+significativamente para a qualidade e celeridade da prestação
+do serviço ao cidadão. Em Portugal, o RSE é uma das
+prioridades para a área da saúde, tendo sido constituído um
+grupo de trabalho, que reuniu representantes de diversos
+sectores da saúde. Com o objetivo de promover a reflexão
+neste domínio e apresentar uma proposta de especificações e
+recomendações relativamente ao futuro do RSE, que
+constituiria a base de trabalho para a implementação de um
+RSE nacional. As conclusões e recomendações foram
+apresentadas publicamente, através do despacho n.º 86/2009
+[6]. Apesar da existência de fatores favoráveis ao sucesso da
+sua implementação (e.g., elevado grau de informatização do
+sistema de saúde), no entanto, a dependência de outros
+programas a decorrer (e.g., Registo Nacional de Utentes,
+Registo Nacional de Entidades), a necessidade de produzir
+legislação específica, e as mudanças dos ciclos políticos,
+contribuíram para a estagnação desta iniciativa.
+Neste artigo, vamos começar por caracterizar o Sistema
+Regional de Saúde (SRS) da Região Autónoma dos Açores
+(RAA), na sua organização e estrutura com o respetivo
+enquadramento legislativo. Em seguida, na secção III, apesar
+de não haver qualquer estudo oficial, descrevemos o sistema de
+informação do SRS-RAA, baseado na nossa experiência, e
+propomos uma adoção do modelo Triple Helix para fazer
+emergir organização e participação no SRS-RAA. E,
+finalmente, na secção IV, propomos a adoção de uma
+arquitetura orientada aos serviços (SOA) para gerar
+interoperabilidade no SRS-RAA, no sentido de criar um RSE
+que beneficie da norma OpenEHR, e a criação de um sistema
+de governança SOA para certificação de qualidade.
+II.
+
+SISTEMA REGIONAL DE SAÚDE
+
+O território de Portugal está dividido numa parte
+continental, que se designa por Portugal Continental (PC), e
+numa parte insular, constituída por 2 regiões autónomas: a
+Região Autónoma dos Açores (RAA) e a Região Autónoma da
+Madeira. A RAA é um arquipélago constituído por 3 grupos de
+ilhas: o Grupo Ocidental, o Grupo Central, o Grupo Oriental;
+
+com 9 ilhas, dispersas por 2.333km2 no Atlântico Norte, sendo
+a sua população de, aproximadamente, 250.000 habitantes, em
+que mais do que 50% reside em São Miguel, no Grupo
+Oriental.
+O SRS-RAA é o organismo governamental regional
+responsável pela prestação de cuidados de saúde [7]. Este
+organismo integra todos os cuidados de saúde, desde a
+promoção e vigilância da saúde à prevenção, diagnóstico,
+tratamento e reabilitação das condições de doença e/ou
+incapacidade. O SRS-RAA coexiste com o Serviço Nacional
+de Saúde (SNS) e os seus subsistemas públicos (e.g., ADSE) e
+privados
+específicos,
+para
+determinadas
+categorias
+profissionais, e de seguros voluntários privados. Está
+organizado em Unidades de Saúde de Ilha (USI), Hospitais
+E.P.E., Centro de Oncologia dos Açores (serviço
+especializado), Conselho Regional de Saúde (órgão
+consultivo), Saudaçor e Inspeção Regional de Saúde [8].
+De acordo com a organização político-administrativa de
+Portugal baseada em distritos, a RAA tem 3 distritos cujas
+capitais são: Horta, no Faial; Angra do Heroísmo, na Terceira;
+e Ponta Delgada, em São Miguel. Cada uma destas cidades é
+servida por um hospital distrital, diferindo na quantidade e
+tipologia das valências disponíveis. Existe dispersão e
+multiplicação de recursos materiais e humanos, que dificultam
+a gestão e a racionalização do SRS-RAA. Como é salientado
+em [9] para o caso de PC, também algumas instituições do
+SRS-RAA, gozando de uma autonomia administrativa e
+financeira, adotaram metodologias e desenvolveram soluções
+SI próprias e à medida. E, assim, dificultando a adoção de uma
+estratégia e um modelo de governança único mas transversal,
+de forma a racionalizar o sistema. Neste sentido, a criação das
+USI, através de vários decretos regulamentares regionais de
+2003 a 2011, visa proporcionar melhor articulação entre as
+instituições de saúde de cada ilha, unificar a gestão dos
+cuidados de saúde primários, permitindo a uniformização de
+procedimentos e otimização de recursos. Em situações em que,
+eventualmente, a entidade prestadora de cuidados de saúde, da
+área de residência do cidadão, não responde às exigências por
+falta de recursos humanos, técnicos e/ou materiais, o cidadão é
+transportado para outra entidade de saúde na RAA ou em PC.
+Este transporte acontece por via marítima e/ou aérea, com
+possíveis constrangimentos na qualidade e, por vezes, pondo
+em causa a continuidade dos cuidados de saúde. Cada
+deslocação está condicionada a horários e procedimentos, a
+atrasos provocados por condições climatéricas adversas, a
+custos acrescidos, entre outros.
+III.
+
+SISTEMA DE INFORMAÇÃO REGIONAL DE SAÚDE
+
+Para diminuir os condicionamentos geográficos e garantir
+maior acessibilidade e qualidade aos cuidados de saúde
+prestados às populações, é necessário fortalecer a comunicação
+entre os profissionais e melhorar a gestão dos recursos. A
+infraestrutura de comunicações na RAA é suportada por
+diversas tipologias, onde se destacam os anéis de fibra-ótica
+inter-ilhas e intra-ilha, que ligam todas as instituições públicas
+regionais.
+Atualmente não existe qualquer estudo oficial publicado,
+por entidades oficiais ou outras, sobre o estado da arte dos SIS
+na RAA, nomeadamente sobre a diversidade e
+
+interoperabilidade dos sistemas existentes. Salientamos a
+iniciação de um projeto de integração das diferentes soluções
+informáticas (clínicas e não clínicas) no SRS-RAA, sob a tutela
+da Saudaçor [10]. A ausência de informação oficial sobre uma
+visão global, do papel do SIS associado ao SRS-RAA, e um
+inventário geral sobre estes sistemas, levou-nos a avançar com
+um estudo de diagnóstico dos SIS na RAA. Este estudo está a
+decorrer com a realização de inquéritos e entrevistas aos
+respetivos conselhos de administração. Mas, sabemos, por
+experiência própria, que existem vários sistemas em
+funcionamento dos quais destacamos o MedicineOne, o
+SONHO, o Consultorios, soluções Glintt, entre outros.
+Sabemos, também, que existem sistemas específicos
+construídos à medida, por grupos de desenvolvimento internos,
+em hospitais e centros de saúde. As unidades do SRS-RAA
+possuem autonomia administrativa e financeira para decidir
+quais os SIS que devem ser adquiridos e mantidos para
+suportar a sua atividade. O SIS regional tem vindo a crescer em
+quantidade e diversidade de soluções heterogéneas e
+desintegradas.
+Neste artigo vamos circunscrever o problema à necessidade
+da criação de um RSE regional compatível com a
+recomendação europeia [4]. No entanto, primeiro, há que
+refletir sobre um modelo de organização mais abrangente,
+participado e colaborativo, para uma evolução mais sustentada
+e inovadora do SRS-RAA. Como é concluído em [4], uma
+infraestrutura nacional bem organizada para e-saúde pode
+ajudar a tornar os sistemas nacionais mais eficientes e
+promover o desenvolvimento de ferramentas e serviços na
+prestação dos cuidados de saúde, de forma a corresponder aos
+seus desafios.
+O conceito Triple Helix [11] emerge da análise do
+relacionamento entre governo, universidades e empresas em
+diferentes sociedades e dos diferentes papéis que assumem na
+inovação. Consiste no relacionamento recíproco entre as três
+partes, através do qual cada uma tenta melhorar o desempenho
+das outras, em iniciativas trilaterais concertadas, muitas das
+vezes em contextos específicos regionais e fora dos seus papéis
+e tarefas tradicionais. O papel do governo deverá ser o de
+regulador, promotor e financiador de iniciativas, traduzidas em
+projetos, na medida do seu carácter mais ou menos
+interventivo. As universidades formam os recursos humanos,
+quer através do ensino, quer através dos seus centros de I&D, e
+estimulam a transferência tecnológica, participando em
+conjunto
+com
+as
+empresas
+no
+desenvolvimento
+socioeconómico da região. Em relação ao modelo original
+Triple Helix, propomos que seja alargado o âmbito do círculo
+das empresas, de forma a incluir não só as empresas com
+objeto de negócio vocacionado para a saúde. Mas, também, as
+instituições de prestação de cuidados de saúde, garantindo a
+sua autonomia administrativa e financeira. Sendo que estas são
+subtraídas ao círculo do governo, onde, geralmente, estão
+localizadas.
+Para o SRS-RAA propomos um modelo de organização
+inspirado no Triple Helix, para reunir as partes interessadas, de
+forma
+a
+mitigar
+os
+problemas
+decorrentes
+da
+interoperabilidade, para criar um sistema RSE regional. Na
+RAA é necessário notar que não existe qualquer estrutura que
+assuma o papel do círculo associado à universidade, para o
+
+qual a universidade local tripolar deve ter uma
+responsabilidade acrescida. O Governo pode somente prestar
+os serviços mínimos no papel de depositário do SI do RSE,
+assumindo três objetivos genéricos: a) prestar um serviço
+atualizado do RSE às necessidades das unidades de saúde do
+SRS-RAA; b) assumir o papel de agente único no
+relacionamento com o SNS; c) prestar um serviço RSE em
+solicitações transnacionais que envolvam os seus cidadãos.
+IV.
+
+ARQUITETURA ORIENTADA A SERVIÇOS
+
+A conceção de uma arquitetura para um sistema RSE, tem
+recorrido maioritariamente a modelos de referência que se
+enquadram em três tipos: centralizado, descentralizado e
+híbrido [12] No panorama do SNS, as orientações apresentadas
+em [12] apontam o modelo híbrido como referência para um
+RSE nacional. Este tipo de modelo segue uma abordagem de
+federação de sistemas distribuídos numa estrutura com 3 níveis
+de repositórios de informação: o tronco comum (N1) que
+consiste num núcleo central de armazenamento de informação
+sumária de saúde de cada cidadão; o nível especifico que
+compreende os sistemas operacionais utilizados e atualizados
+pelos profissionais de saúde ou os sistemas que o cidadão
+utiliza para gerir dados pessoais relacionados com a sua saúde
+(N3) e o nível de partilha (N2), situado entre os níveis N1 e
+N3, disponibiliza, de forma distribuída, a informação entre
+estes níveis. Ao serem estabelecidas normas de estruturação e
+codificação da informação, pode-se criar um SI homogéneo de
+partilha de informação com os sistemas heterogéneos do N3.
+Esta partilha exige um conjunto de componentes funcionais
+que garantam a segurança, a privacidade e a interoperabilidade,
+que permitem arquitetar o RSE como uma federação de
+serviços [13].
+O paradigma de arquitetura SOA é uma solução adequada
+para satisfazer estes requisitos, na medida em que se ajusta à
+natureza complexa, evolutiva e em permanente inovação no
+RSE [14]. Permite desenvolver uma implementação
+incremental e flexível, adaptada à mudança permanente. Separa
+a especificação das interfaces da tecnologia associada à
+implementação dos componentes, possibilitando a criação de
+serviços, em estruturas lineares ou não lineares, interoperáveis
+que podem ser reutilizadas e partilhadas de forma intraorganizacional e inter-organizacional. O SOA define um
+conjunto de serviços independentes com interfaces predefinidas
+de visibilidade pública. Estes serviços podem ser invocados
+remotamente para executar determinadas tarefas, sem terem
+qualquer conhecimento da aplicação que os invocou e sem que
+a aplicação tenha conhecimento de como estão implementados.
+A descrição destes serviços é feita de forma a que possam ser
+divulgados dinamicamente, através de mecanismos de
+pesquisa, e que o seu acesso se faça através de protocolos e
+normas abertas, para garantir maior interoperabilidade entre os
+componentes. Com esta solução, a implementação de novas
+regras de negócio é feita sem envolver mudanças profundas e
+custos elevados no sistema existente, uma vez que é realizada
+através da inclusão/eliminação/alteração de serviços. Neste
+contexto, um serviço é uma funcionalidade de negócio,
+independente e modular que pode ser reutilizado em diversos
+contextos, e eventualmente combinado com outros serviços
+para definir novos serviços em outro nível de negócio. Do
+ponto de vista da engenharia de software, o serviço é uma
+
+componente fracamente ligada que encapsula uma
+funcionalidade que pode ser distribuída e acedida em rede
+através de protocolos e normas abertas.
+Uma arquitetura SOA é constituída por 3 entidades: service
+requester, em que o cliente invoca o serviço após efetuar a
+pesquisa publicada num service registry; service registry,
+publica o catálogo de serviços disponíveis para os clientes
+consultarem; service provider, é o fornecedor dos serviços
+responsável pela criação das respetivas descrições e publicação
+no service registry, e ainda gerir as mensagens de invocação
+dos clientes. Esta arquitetura apresenta benefícios que nos
+levam a propor uma solução SOA para o RSE da RAA. De
+acordo com (Erl, Bennett, Carlyle, & Gee, 2011), o SOA
+apresenta os seguintes benefícios: a) Agilidade de
+negócio/entregas rápidas: permite responder mais rapidamente
+às mudanças do mercado através da apresentação de novos
+serviços. A modularização caracterizada por componentes
+fracamente ligados facilita mudança e a evolução, uma vez que
+minimiza o impacto da substituição/aumento de componentes;
+b) Redução de custos: é conseguida através da reutilização, do
+desenvolvimento baseado em normas e numa visão dos
+serviços disponíveis e as suas funcionalidades; c) Promoção da
+reutilização dos serviços: desde que os serviços, internos ou
+externos, estejam bem definidos e inventariados, a sua
+reutilização é recomendável, o que se traduz em poupança de
+custos e tempo; d) Contribuição para a qualidade do software:
+é feita através de políticas que promovam a homogeneidade
+dos processos e implementações, definindo normas e boas
+práticas, aplicando a reutilização de serviços, e a facilidade de
+manutenção; e) Melhoria da interoperabilidade: os serviços
+são baseados em contratos que utilizam normas públicas.
+A garantia da qualidade dos serviços prestados pelos
+sistemas baseados em SOA pode ser certificada com boas
+práticas de governança [15]. No contexto do SRS-RAA, a
+governança refere-se aos processos para supervisionar e
+controlar a adoção e implementação de princípios e
+regulamentações governamentais. Proporciona qualidade de
+serviço, consistência, previsibilidade e desempenho, garantindo
+que as políticas prescritas são seguidas e corrigindo problemas
+à medida que ocorrem. Este processo de governança é iterativo
+e envolve três passos: 1) definição de políticas, feita pela
+organização, ouvidas as partes interessadas, o que inclui a
+identificação dos clientes que vão usar os serviços e o motivo
+pelo qual o fazem, os processos que devem ser seguidos e os
+responsáveis técnicos por assegurarem a disponibilização dos
+serviços; 2) adoção das políticas na definição dos serviços, que
+ocorre na fase de desenho do sistema; 3) monitorização do
+funcionamento do sistema e cumprimento das políticas
+definidas é feita através do controlo da aplicação das políticas e
+certificação permanente da qualidade do sistema. No final de
+cada iteração, a experiência adquirida pode justificar o
+ajustamento das políticas definidas, dando origem a nova
+iteração. As principais componentes da governança SOA são:
+a) Registo: um catálogo de informações sobre os serviços
+disponíveis na implementação, permitindo às organizações
+descobrir os serviços, de forma eficiente, e comunicar umas
+com as outras; b) Política: um conjunto de restrições de
+comportamento destinadas a garantir que os serviços
+permaneçam consistentes e não entram em conflito, além de
+
+garantirem a aplicação de boas práticas nas relações com os
+clientes e que os princípios e leis do governo sejam cumpridas.
+Um agente específico pode ser designado para conceder,
+ocasionalmente, exceções políticas; c) Testes: consistem numa
+agenda abrangente de auditorias e procedimentos de
+monitorização de desempenho, que tem como objetivo garantir
+que toda a solução SOA é eficiente, de baixo custo, segura e
+atualizada. O uso de um sistema de governança SOA tem
+benefícios, tanto na perspetiva do modelo de negócio como na
+perspetiva do desenvolvimento de software, nomeadamente na
+monitorização da utilização dos serviços e na uniformização da
+especificação dos serviços.
+V.
+
+TRABALHO FUTURO
+
+Para conhecer as perspetivas, oportunidades e desafios do
+SRS-RAA sobre a interoperabilidade dos SIS, está a decorrer
+um inquérito dirigido a técnicos dirigentes do universo das
+unidades do SRS-RAA. Este inquérito está organizado segundo
+uma abordagem centrada nas camadas de integração:
+informacional, aplicacional, processual e inter-organizacional;
+e vocacionado para a perspetiva tecnológica. Está, também, em
+fase de concepção, uma arquitetura baseada em SOA, seguindo
+as recomendações do OpenEHR, para um RSE regional que se
+pretende integrado e possa beneficiar da visão que emerge da
+proposta de adoção do Triple Helix.
+REFERÊNCIAS
+[1] P. Sinha, G. Sunder, P. Bendale, M. Mantri e A. Dande, Electronic
+Health Record - Standards, Coding Systems, Frameworks, and
+Infrastructures, Milwaukee: IEEE Press, 2012.
+[2] P. Schloeffel, T. Beale, G. Hayworth, S. Heard e H. Leslie, “The
+relationship between CEN 13606, HL7, and openEHR,” em HIC 2006
+and HINZ 2006, Brunswick East, 2006.
+[3] “Directiva 2011/24/UE do Parlamento Europeu e do Conselho,” Jornal
+Oficial da União Europeia, 2011.
+[4] “Recomendação da Comissão 2008/594/CE,” Jornal Oficial da União
+Europeia, 2008.
+[5] HIMSS, HIMSS Dictionary of Healthcare Information Technology
+Terms, Acronyms and Organizations, Chicago: HIMSS, 2013.
+[6] “Despacho n.º 27311/2009,” Diário da República, vol. 2.ª série, nº 245,
+2009.
+[7] “Decreto Regional n.º 7/79/A,” Diário da Républica, nº 95, 1979.
+[8] “Decreto Legislativo Regional n.º 1/2010/A,” Jornal Oficial da Região
+Autónoma dos Açores, vol. I Série, nº 1, 2010.
+[9] APDSI, “Interoperabilidade na Saúde - Onde Estamos?,” APDSI, 2013.
+[10] Saudaçor, “Aquisição do sistema de informação da saúde – Açores
+região
+digital,”
+[Online].
+Available:
+http://www.saudacor.pt/ficheiros/concursos/1_1237210085.pdf.
+[11] H. Etzkowitz, The Triple Helix: University-Industry-Government
+Innovation in Action, New York: Routledge, 2008.
+[12] D. Pereira, J. C. Nascimento e R. Gomes, Sistemas de Informação na
+Saúde - Perspetivas e Desafios em Portugal, Lisboa: Edições Sílabo,
+2011.
+[13] Grupo Trabalho RSE, “RSE - Registo Saúde Eletrónico. R1: Estado da
+Arte,” Ministério da Saúde, 2009.
+[14] L. Ribeiro, Interoperabilidade nos Sistemas de Informação de Saúde –
+das convicções à realidade, Porto: Universidade do Porto, 2010.
+[15] T. Erl, S. G. Bennett, B. Carlyle e C. Gee, SOA Governance: Governing
+Shared Services On-Premise and in the Cloud, Boston: Prentice Hall,
+2011.
+
+

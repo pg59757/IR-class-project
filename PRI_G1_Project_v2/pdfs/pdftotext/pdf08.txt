@@ -1,0 +1,851 @@
+A Quantum Algorithm for Ray Casting using an
+Orthographic Camera
+Carolina Alves
+
+Luı́s Paulo Santos
+
+Thomas Bashford-Rogers
+
+Universidade do Minho
+Braga, Portugal
+a75610@alunos.uminho.pt
+
+Universidade do Minho & INESC-TEC &
+Quantum Software Engineering, INL
+Braga, Portugal
+psantos@di.uminho.pt
+
+University of West of England
+Bristol, United Kingdom
+Tom.Bashford-Rogers@uwe.ac.uk
+
+Abstract—Quantum computing has the potential to provide
+solutions to many problems which are challenging or out of reach
+of classical computers. There are several problems in rendering
+which are amenable to being solved in quantum computers, but
+these have yet to be demonstrated in practice. This work takes
+a ﬁrst step in applying quantum computing to one of the most
+fundamental operations in rendering: ray casting. This technique
+computes visibility between two points in a 3D model of the world
+which is described by a collection of geometric primitives. The
+algorithm returns, for a given ray, which primitive it intersects
+closest to its origin. Without a spatial acceleration structure, the
+classical complexity for this operation is O(N ). In this paper, we
+propose an implementation of Grover’s Algorithm (a quantum
+search algorithm) for ray casting. This provides a quadratic speed
+up allowing
+for visibility evaluation for unstructured primitives
+√
+in O( N ). However, due to technological limitations associated
+with current quantum computers, in this work the geometrical
+setup is limited to rectangles and parallel rays (orthographic
+projection).
+Index Terms—quantum computing, ray casting, Grover’s algorithm, complexity
+
+I. I NTRODUCTION
+The ﬁeld of quantum computing has registered huge developments over the last few years, raising the perspective for
+this alternative computing paradigm to become practical and
+advantageous in the medium term.
+Richard Feynman is believed to have been the ﬁrst to
+propose using quantum mechanics as a model for computation
+[1]. Theoretical results soon followed, with, for example, the
+proposal of the quantum Turing machine by Deutsch in 1985
+[2] and algorithms that lie in the heart of most quantum
+programs, including Grover’s for unstructured searching [3],
+Shor’s for prime factorization [4] and the Quantum Fourier
+Transform [5].
+More recently, technological advances made it possible for
+some companies to make quantum computers available to
+the community. These machines still impose quite demanding
+This work was partially ﬁnanced by National Funds through the Portuguese funding agency, FCT – Fundação para a Ciência e a Tecnologia
+– within project: UID/EEA/50014/2019. This work was partially funded by
+SmartEGOV/NORTE-01-0145-FEDER-000037, supported by Norte Portugal
+Regional Operational Programme (NORTE 2020), under the PORTUGAL
+2020 Partnership Agreement, through the European Regional Development
+Fund (EFDR).
+978-1-7281-6378-9/19/$31.00 ©2019 IEEE
+
+limitations on the size and execution time of the problems
+they can solve, due to limited coherence times, reduced
+number of qubits and signiﬁcant error rates at the gates
+level. Nevertheless, the number of researchers, practitioners
+and companies experimenting with prototype applications to
+solve an ever growing variety of problems has been increasing
+exponentially. This rising interest on quantum computing is
+largely supported by an huge investment both from private
+companies and research funding institutions [6], [7].
+An n-qubits quantum computation evolves on an exponential state space, representing at each instant a linear superposition of 2n states. Each computing step leads the system
+to another superposition, acting on the 2n states simultaneously without any resources replication. On the other hand,
+a classical n-bits system represents at each instant a single
+state out of the 2n possible states and a computing step leads
+to a single subsequent state. It is this exponential quantum
+parallelism that holds the promise of the quantum advantage
+over classical computing. For some problems quantum algorithms have been found which exhibit better complexity than
+classical alternatives, allowing for the efﬁcient computation
+of otherwise intractable problem sizes. Grover’s algorithm [3]
+for √searching on a N elements unstructured domain exhibits
+O( N ) time complexity, as opposed to O(N ) in the classical
+setting: in the worst case all N elements of the domain have
+to be veriﬁed.
+Ray casting is a well known rendering technique, consisting
+on shooting a ray from a point along a given direction to
+determine whether i) that direction is occluded (i.e., the ray
+intersects at least one geometric primitive), or ii) what is
+the visible geometric primitive along the ray’s direction (i.e.,
+among all primitives intersected by the ray which one is nearer
+to the ray’s origin). If there are N geometric primitives and
+if these are not ordered on any manner, then classical ray
+casting requires testing intersection against all primitives, with
+complexity O(N ).
+This paper demonstrates the application of Grover’s algorithm to ray casting, addressing both the occlusion
+√ and the
+visibility problems, with worst-case complexity O( N ). Even
+though using Grover’s for this purpose has been suggested
+before [8]–[10], no implementations and no real results were,
+to the best of the authors’ knowledge, ever presented. We
+
+Authorized licensed use limited to: b-on: UNIVERSIDADE DO MINHO. Downloaded on April 05,2021 at 13:52:05 UTC from IEEE Xplore. Restrictions apply.
+
+propose concrete implementations and present results obtained
+both on a simulator and on a real quantum computer. Advantages and limitations of the proposed approach are discussed.
+All experiments, both simulations and real quantum computer
+executions, were performed using IBM’s quantum computing
+framework, Qiskit1 , and Tokyo, the IBM Q Network 20 qubits
+machine.
+Current circuit-based quantum computers provide no functional units to perform even the most fundamental arithmetic
+operations to mathematical data types, such as integers or
+ﬂoating point numbers. In fact, the program consists essentially on a list of basic transformations, referred to as gates, to
+apply to the qubits. Supporting complex operations, such as
+non-integer number representations or trigonometric functions,
+requires implementing them at the gate level. Besides the
+obvious programming overhead, these additional gates would
+dramatically increase the circuit depth and the number of
+required qubits, pushing the limits well beyond what is possible with today’s noisy and limited scale quantum computers.
+In order to avoid such overheads this paper deals only with
+integers, the view plane is contained within the Z=0 plane,
+all geometric primitives are axis-aligned rectangles parallel
+to the view plane and the rays are perpendicular to the
+view plane and parallel to the Z-axis (thus the orthographic
+projection); all coordinates ((x, y) for pixels and rays, (x, y, z)
+for points in space) are integers. These restrictions facilitate
+the development of the quantum program and make it possible
+to use current simulators and real machines. There are, however, no theoretical reasons why ﬂoating point numbers and
+trigonometric functions cannot be used. They just wouldn’t be
+feasible on current hardware given the limitations imposed by
+the technology state of the art.
+
+Even though the quantum computation evolves on an exponentially large state space, computing all solutions simultaneously, this space is not accessible. Upon measurement the
+superposition |Ψ collapses onto one basis state |i, among
+all basis states included on |Ψ, with probability |αi |2 . Any
+posterior measurements will return the same basis state and
+the probability with which it was selected (|αi |2 ) is also
+not accessible - all the information on the superposition is
+lost with the measurement and the register behaves now as
+classical data. The role of quantum algorithms is to maximize
+the probability of measuring the desirable states within a
+superposition and to postpone measurements (i.e., reading
+quantum data) until the last step of the algorithm.
+The laws of Quantum Mechanics require that all operations
+performed on qubits are unitary and reversible. The former
+means that the norm of the vector of basis states coefﬁcients
+αi is maintained and is equal to 1 after the transformation; this is required since the vector of αi ’s is in fact a
+probability distribution. Reversibility is a consequence of the
+unitary requirement and means that given the outputs of the
+transformation its inputs can be known: the computation is
+reversible. Reversibility has several consequences at the circuit
+level: all quantum gates, which operate over qubits, must have
+the same number of inputs and outputs; this often results in
+circuits with a larger number of gates and more qubits than
+would be required for their classical counterpart. Information
+is never destroyed, since the computation can be reversed.
+According to the Landauer’s principle [11] the erasure of a
+bit of information corresponds to the dissipation of energy in
+the form of heat to the environment; quantum computing does
+not destroy information (up to the ﬁnal measurements) and
+has thus the potential to be more power efﬁcient than classical
+computing.
+The quantum circuit model represents quantum programs as
+a series of gates applied to qubits. Each qubit is represented
+as a horizontal line and each gate is connected to the qubits
+it interacts with. Whereas with classical circuits signals ﬂow
+along the circuit, with quantum circuits time ﬂows along
+the circuit, from left to right – qubits do not ﬂow, rather
+gate operations are applied onto the qubits (for example as
+microwaves used in some technologies). Gates can be written
+in matrix form, which are applied to the qubits. For example,
+the Hadamard H and X (NOT) gates can be expressed as:
+
+II. Q UANTUM C OMPUTING : S HORT OVERVIEW
+A. Fundamentals
+The basic quantum unit of information is the qubit |b,
+which allows a linear superposition of two orthogonal basis
+states |0 and |1:
+|b = α0 |0 + α1 |1, α0 , α1 ∈ C, |α0 |2 + |α1 |2 = 1
+With n qubits a superposition |Ψ over N = 2n basis states
+can be created:
+|Ψ =
+
+N
+−1
+
+i=0
+
+αi |i, αi ∈ C,
+
+N
+−1
+
+
+|αi |2 = 1
+
+
+1 1
+H=√
+2 1
+
+i=0
+
+For a uniform superposition all basis states’ weights are equal,
+αi = α = √1N . Any operation over a superposition will
+act simultaneously on the 2n states, in what is referred to
+as exponential quantum parallelism. This means that applying
+a function f (·) once to superposition |Ψ, effectively results
+on a new superposition |Ψ  containing all N = 2n values of
+f (|Ψ).
+
+
+
+1
+0
+,X =
+−1
+1
+
+
+1
+0
+
+(1)
+
+Figure 1 illustrates one such circuit: the qubits initial state is
+|0, converted into an uniform superposition using Hadamard
+gates; then |q0  is negated (the coefﬁcients of basis states |0
+and |1 are swapped) and ﬁnally measurement gates are used,
+reading one of the basis states present in |q0 q1  to classical
+register c, according to the respective probability (in this case
+0.25, since the 4 states are equally probable).
+
+1 https://qiskit.org/
+
+57
+Authorized licensed use limited to: b-on: UNIVERSIDADE DO MINHO. Downloaded on April 05,2021 at 13:52:05 UTC from IEEE Xplore. Restrictions apply.
+
+III. R ELATED W ORK
+In 2001 Andrew Glassner discussed quantum computing
+on his notebook [8]–[10] and suggested applying Grover’s
+algorithm to the Z-buffer and ray casting problems. For the
+former a superposition over all the polygons and respective
+depth could be created and Grover used to identify the
+minimum depth. For the latter a superposition over all spheres
+and respective parameters (a, b, c) could be created; equation
+at2 + bt + c = 0 would then be solved simultaneously
+for all spheres and Grover used to locate the minimum
+positive t. For both problems a quadratic advantage could
+be obtained over an unordered classical search. Sadakane et
+al. [12] present a theoretical analysis of the complexity of
+Grover’s, and a closely related minimum ﬁnding algorithm
+[13], applied to several geometric applications, including
+nearest neighbor, separation and function maximizing queries,
+geometric optimization problems (minimum enclosing ball,
+common intersection emptiness and convex hull computation)
+and intersection detection among large dimensional geometric elements. Simona Caraiman [14] also proposes applying
+Grover’s algorithm to the Z-buffer and ray tracing problems.
+Additionally, she proposes addressing photon mapping, using
+Grover’s for k-nearest neighbor queries, besides the photon
+shooting and the ray tracing stages. Lanzagorta and Uhlmann
+[15] propose using Grover’s algorithm for a number of computational geometry problems, including nearest neighbour
+queries, object-object intersection, Z-buffering, ray tracing,
+radiosity and level of detail, among others. A detailed time
+and space complexity analysis is used to argue that quantum
+search is asymptotically advantageous over classical search for
+large domains (large N ) and domain dimensionality d >= 3.
+Classical spatially ordering the search space in such conditions
+requires O(N logd−1 N ) space for a query time complexity
+of O(logd N ), but since N and d are large, such spatial
+ordering in not feasible. Classical computing has thus to resort
+to unsorted search, which is O(N ) in both space
+√ and time;
+quantum searching under such conditions is O( N ) in time
+and O(N ) in space, thus presenting a quadratic speedup.
+All the above cited works maintain the discussion at the
+algorithmic and complexity analysis levels. No simulation,
+implementation or execution of the proposed algorithms is
+performed and no real experimental results are presented. This
+paper presents an actual implementation and real results for
+the ray casting problem.
+A different problem is addressed by Johnston [16]. The
+author performs pixel level supersampling by resorting to the
+quantum amplitude estimation algorithm to numerically integrate sub pixel samples through a combination of a quantum
+algorithm and a classical lookup table. Experimental results
+show improvements, compared to those obtained with classical
+Monte Carlo integration for the same number of samples.
+These results are obtained using a simulator, a IBM ﬁve
+qubit machine, and a photonic quantum computer. This paper
+focuses on supersampling pixels based on a known underlying
+signal, whereas our work computes this signal from a scene
+
+Fig. 1. An example quantum circuit.
+
+B. Grover’s Algorithm
+For n qubits, and N = 2n , let f : {0 . . . N − 1} −→ {0, 1},
+such that
+
+0←x = x∗
+f (x) =
+1←x = x∗
+The problem being addressed is ﬁnding the value(s) x∗ ∈
+{0 . . . N − 1} : f (x∗ ) = 1. If nothing is known about f (·)
+then a classical approach must, in the worst case, evaluate the
+function N − t + 1 ∝ O(N ) times (where t is the number of
+∗
+different x∗ satisfying f (·)). Grover’s
+ algorithm will ﬁnd x
+by executing the function only O( Nt ) times, thus exhibiting
+a quadratic advantage.
+Grover’s algorithm starts by creating an uniform superposition over all basis states, |Ψ, by using Hadamard gates. |Ψ
+can be expressed as a sum of two vectors: |Ψ1  contains the
+basis states for which f (·) = 1 (referred to as the ”good”
+states), and |Ψ0  contains the remaining. From Figure 2 left,
+it can be seen that |Ψ = sin θa |Ψ1  + cos θa |Ψ0 , thus
+2
+the probability of measuring a state in |Ψ
+1  is sin θa ; this
+t
+probability is also Nt , therefore sin θa =
+N . The goal is
+to maximize the probability of measuring a state in |Ψ1 ,
+which is achieved by applying multiple iterations of Grover’s
+operator, Q. The ﬁrst stage in this operator is the oracle O,
+which implements f (·) and negates the sign of the ”good”
+states’ coefﬁcients according to O|i = (−1)f (|i) ∗ |i (see
+Figure 2 center). Marking the ”good” states does not change
+their probability; this is achieved by the diffusion operator,
+D, which performs a reﬂection over the average, depicted
+in Figure 2, right, as a reﬂection over the uniform superposition. After one application of Q = DO the probability
+of measuring a ”good” state has increased. It can be shown
+that after r iterations of Q the resulting state is |Ψ(r)  =
+sin ((2r + 1)θa )|Ψ1  + cos ((2r + 1)θa )|Ψ0 . Maximizing the
+probability of measuring a basis state in |Ψ1  amounts to
+making sin ((2r + 
+1)θa ) ≈ 1, which
+ for sufﬁciently large N
+results in r ≈ π4 Nt , i.e., O( Nt ) Grover iterations are
+required, resulting on a quadratic speed up over the classical
+case. Performing more iterations than the ideal r actually
+reduces the probability of measuring a good state; successful
+application of Grover’s depends on the ability to compute r
+and, consequently, on the previous knowledge of t.
+
+58
+Authorized licensed use limited to: b-on: UNIVERSIDADE DO MINHO. Downloaded on April 05,2021 at 13:52:05 UTC from IEEE Xplore. Restrictions apply.
+
+Fig. 2. Grover’s algorithm. Left: Uniform superposition. Center: the oracle negates the sign of the ”good” states’ coefﬁcients. Right: the diffusion operator
+reﬂects the quantum state over the uniform superposition; the probability of measuring a basis state in |Ψ1  increased from sin2 θa to sin2 (3 ∗ θa ).
+
+B. Quantum Algorithm
+
+description.
+
+Grover’s algorithm is used to identify intersections between
+a given ray (x, y) and the geometric primitives. A detailed
+description is given in Algorithms 1 and 2. These algorithms
+assume there are N = 2n primitives indexed from 0 . . . N − 1
+using a n qubit quantum register labelled as |p; quantum
+register |c is prepared with the coordinates of the primitives, requiring nc qubits, nc = log2 (max(maxX , maxY )).
+Transforms {m|M }{X|Y } generate the minimum (resp. maximum) X (resp. Y) coordinates of a primitive from its index;
+these are functions of the IDs of the primitives deﬁned for
+each scene and the circuit is derived using basic Boolean
+simpliﬁcation techniques.
+
+IV. R AY C ASTING : SINGLE SOLUTION CASE
+This section addresses the case where no more than one
+primitive projects to each pixel. For each primary ray, and
+thus for each quantum query, there is only zero or one solution.
+The important points are: i) the number of solutions is known
+(t = 1), which is fundamental for calculating the number of
+Grover’s iterations (t = 0 will be handled as a failure to ﬁnd a
+solution) and ii) the occlusion and visibility problems are the
+same, since the ray intersects only one primitive.
+A. Geometric Setup
+Current quantum computers do not include functional units
+to perform any kind of arithmetic operation over any data
+type (integers, ﬂoating point, etc.). To overcome such handicap an orthographic projection is used, with all coordinates
+being positive integers. The view plane is contained in plane
+Z = 0, primitives are rectangles parallel to the view plane
+(constant positive Z) and primary rays are parallel among
+themselves and the Z axis (X, Y constant); there is a one
+to one correspondence between pixels in the image plane and
+primary rays. Primitives are characterized by ﬁve parameters:
+(minX , maxX , minY , maxY , Z); the latter is not relevant for
+the non-overlapping case addressed on this section, since at
+most one primitive projects onto a pixel (x, y). A ray intersects
+a primitive if minX ≤ x ≤ maxX ∧ minY ≤ y ≤ maxY ,
+dispensing with any numerical calculations. Figure 3 presents
+
+Algorithm 1 Q RayCast: quantum algorithm for ray (x, y),
+N primitives and r iterations
+Superposition over the primitives IDs: |p = H ⊗n |0⊗n
+for r iterations do
+Grover’s oracle {Algorithm 2}
+Grover’s diffusion operator
+end for
+ID ← Measure |p
+return ID
+Algorithm 2 Oracle for ray (x, y) intersection with N primitives
+|Hint ← |1; |Vint ← |1
+minX : |p|c = mX|p|0⊗nc
+Negate Hint if x ≥ c; revert |c
+maxX : |p|c = MX|p|0⊗nc
+Negate Hint if x ≤ c; revert |c
+minY : |p|c = mY|p|0⊗nc
+Negate Vint if y ≥ c; revert |c
+maxY : |p|c = MY|p|0⊗nc
+Negate Vint if y ≤ c; revert |c
+|intersect = |Hint ∧ |Vint
+Flip the primitive’s coefﬁcient sign if intersect = 1: |p =
+(−1)intersect ∗ |p
+Revert |Hint, |Vint and |intersect
+
+Fig. 3. Geometric setup for the non-overlapping case.
+
+the non-overlapping setup for the 2D/3D case (Z is not
+relevant).
+
+After execution of Algorithm 1 the probability of reading
+the ID of the primitive that intersects the ray, i.e., ps , the suc-
+
+59
+Authorized licensed use limited to: b-on: UNIVERSIDADE DO MINHO. Downloaded on April 05,2021 at 13:52:05 UTC from IEEE Xplore. Restrictions apply.
+
+subcircuit uses Hadamard gates to prepare |p onto an uniform
+superposition. Only 1 Grover iteration is required (r = 1, see
+Table I) together with 5 ancillary qubits logically organized
+onto 2 registers: |aux and |aux2. Finally, measurement gates
+measure the quantum state and store the result on classical
+register |c.
+
+TABLE I
+r, ps AND ps,c=2 FOR G ROVER ’ S WITH A SINGLE SOLUTION
+N
+1/N
+r
+ps
+ps,c=2
+
+4
+0.250
+1
+1.000
+1.000
+
+8
+0.125
+2
+0.945
+0.997
+
+16
+0.063
+3
+0.961
+0.999
+
+64
+0.016
+6
+0.997
+1.000
+
+256
+0.04
+12
+1.000
+1.000
+
+1024
+0.01
+25
+0.999
+1.000
+
+√
+cess probability, is sin2 ((2r+1)θa ) with θa = sin−1 (1/ N ).
+For N > 4 this probability is close to, but less than, 1.
+Table I presents ps for different numbers of primitives. Upon
+measurement three different cases can occur:
+1) the intersecting primitive is measured;
+2) a non-intersecting primitive is measured, but in fact the
+ray intersects one primitive;
+3) a non-intersecting primitive is measured and in fact
+there is no intersection (all primitives have a uniform
+probability = 1/N of being measured).
+Fig. 4. Geometric setup for the non-overlapping case.
+
+Algorithm 3 Hybrid algorithm for the non overlapping case
+(single solution)
+for all pixels (x, y) on the image plane do
+intersected = False
+iteration√= 0
+r =  π4 N 
+while not intersected and (iteration < c) do
+ID = Q RayCast (x,y,primitives,r) {Algorithm 1}
+intersected = intersect (x,y, ID)
+iteration ++
+end while
+end for
+
+Figure 5 depicts the oracle. Each of the {m|M }{X|Y }
+operators generates the minimum (resp. maximum) X (resp.
+Y ) bounds of each primitive onto |b. The ge and le operators
+compare the bounds with the ray’s coordinates (x, y), which
+are hardwired into the circuit; comparison results for y (resp.
+x) are stored onto |aux21  (resp. |aux22 ), referred above
+as |Vint (resp. |Hint). These are then anded together onto
+|aux20  (|intersect), using a reversible Toffoli gate. The latter
+will thus be |1 for the primitives intersected by the ray and
+|0 for the remaining (the whole circuit is on a superposition
+over all possible states of |p: 4 basis states in this example).
+After each of the comparison operators the bounds generator
+operator appears again: this is required to reverse the state
+computed onto |b, resetting its value to |00 before it is
+used again for the next computation. Such is the nature of
+quantum reversible computing: all computations have to be
+undone before the qubits can be used again by some other
+operator. The detailed circuits for each of the bounds generator
+and the magnitude comparison operators are not shown since
+these are just basic Boolean operations implemented using
+reversible quantum gates. Finally, a rotation over the Z axis is
+applied to |p conditioned to |aux20  being |1, thus ﬂipping
+the sign of the coefﬁcients of those primitives which intersect
+ray (x, y).
+After the above described circuit the state of |aux2 hasn’t
+been reversed to |000. However, all anciliary have to be
+reversed into the original state, which implies repeating the
+whole circuit in reversed order (or in fact in some order
+guaranteed to be the inverse of the state preparation circuit).
+The last Toffoli gate in Figure 5 reverses the state of |aux20 ;
+this is followed by a complete repetition of the remaining of
+the circuit, in order to reverse |aux21  and |aux22  – these
+are not depicted here due to space constraints.
+
+Algorithm 3 calls quantum Algorithm 1 and then veriﬁes
+whether the ray intersects the measured primitive – this is
+an hybrid algorithm, since the classical code calls a quantum
+program. If the measured primitive is not intersected the
+quantum algorithm is executed again. If after c such iterations
+no measured primitive intersects the ray, then that pixel is not
+occluded with probability
+ps,c = ps +
+
+c−1
+
+
+ps (1 − ps )j
+
+j=1
+
+according to the geometric distribution. The last row of Table
+I presents ps,c=2 for different numbers of primitives. Note
+that within this paper’s context, verifying whether a given ray
+intersects a speciﬁc primitive is O(1): the goal of the quantum
+approach is to reduce the number of evaluations of the intersect
+function, not the cost of each such evaluation.
+C. Circuit
+Figure 4 presents the quantum circuit for a setup with 4
+primitives and max(x, y) = 3, which requires up to 2 qubits
+to represent maxX and maxY (|b on the circuit). The H
+
+60
+Authorized licensed use limited to: b-on: UNIVERSIDADE DO MINHO. Downloaded on April 05,2021 at 13:52:05 UTC from IEEE Xplore. Restrictions apply.
+
+Fig. 5. Oracle for ray casting.
+
+D. Results
+
+TABLE II
+N UMBER OF GATES , TOTAL NUMBER OF QUBITS AND CIRCUIT DEPTH FOR
+
+Figure 6 presents the images obtained with the Qiskit
+simulator for two geometric conﬁgurations (scenes) with 4
+and 8 primitives, respectively. The dots depicted in each pixel
+represent the number of iterations required to evaluate the
+pixel with c = 2. For the single solution case the probability
+of measuring a non intersecting primitive is not signiﬁcant;
+the intersecting primitive was always measured on the ﬁrst
+iteration of Algorithm 3. When there is no intersection the
+algorithm will run c iterations.
+
+BOTH SCENES
+
+Scene
+4 primitives
+8 primitives
+
+Gates
+83
+195
+
+Depth
+33
+68
+
+Qubits
+9
+15
+
+no signiﬁcant conclusion can be extracted from them. Figure
+7 presents an histogram of the measured primitives for pixel
+(x = 1, y = 2), with a single iteration of Algorithm 3 and 256
+trials, for both the simulated and the real machine. While the
+former is 100% accurate, the latter is overwhelmed by noise,
+resulting in an almost uniform distribution of probability over
+all possible measured states.
+
+(a) 4x4 image and scene with 4 (b) 8x8 image and scene with 8
+primitives
+primitives
+Fig. 6. Reference images obtained with the Qiskit simulator for the no
+overlapping case. Numbers identify the primitive; the number of dots indicates
+algorithm 3 iterations due to measuring a non intersecting primitive.
+Fig. 7. Histogram: primitive measurements for simulator and real machine.
+
+Table II presents the total number of gates, total number
+of qubits and circuit depth (length, in gates, of the longest
+path) for an exemplary pixel (x = 1, y = 2) for both scenes
+(4 and 8 primitives). Even for the simpler scene the circuit
+depth is 33; this is well above what can be reliably executed
+on current quantum machines at the time of writing. In fact,
+noise is additive over the gates and, additionally, execution
+times must be kept short due to qubits dephasing and limited
+coherence times. The situation is even worse in practice since
+these circuits have to be mapped onto the real machine, which
+has limited connectivity among physical qubits and supports
+a limited set of gates; the executable circuit gate count and
+depth is therefore signiﬁcantly larger. The results of such a
+large quantum circuit are therefore noisy to the point where
+
+To allow execution on a real machine a simpler circuit was
+prepared for the scene depicted in Figure 8(a); each primitive has coordinates equal to its ID, therefore the operators
+{m|M }{X|Y } that generate the primitive bounds are not required. The ray coordinates can be compared directly with the
+primitive ID and the bounds representation |b is not required
+(compare with Figure 5). The circuit for pixel (x = 2, y = 2)
+requires 7 qubits and 48 gates for a maximum depth of 19.
+Figure 8(b) presents the histogram for the execution of a single
+iteration of Algorithm 3, 256 trials with the simpliﬁed circuit.
+The correct primitive is measured with probability ≈ 0.5 while
+the second most probable measurement is |00 – this is due to
+qubit decoherence (the state relaxes towards |00) and can be
+
+61
+Authorized licensed use limited to: b-on: UNIVERSIDADE DO MINHO. Downloaded on April 05,2021 at 13:52:05 UTC from IEEE Xplore. Restrictions apply.
+
+Algorithm 4 QSearch: Quantum exponential search algorithm
+for the overlapping case - pixel (x, y)
+
+corrected (eventually not using state |00 as a primitive ID and
+treating it as an error). These results suggest that real quantum
+computers can be used in the future, as qubits coherence times
+increase and gate errors decrease.
+
+intersected = False; iteration = 0
+l = 0 ; g = 1.3
+while not intersected and (iteration < c) do
+ID = Q SampleUniformDistribution (primitives)
+intersected = intersect (x,y, ID)
+if not intersected then
+l =l+1
+√
+S = max(g l , N )
+r = rand(1 . . . S)
+ID = Q RayCast (x,y,primitives,r)
+intersected = intersect (x,y, ID)
+iteration++
+end if
+end while
+
+(a) 4x4 image and scene
+with 4 primitives
+
+Fig. 9. 8 primitives scene with 3 different depths.
+
+(b) Histogram for 256 trials, pixel (2, 2)
+Fig. 8. Simpliﬁed setup for execution on the real quantum machine.
+
+– see Figure 10. The probabilistic nature of the algorithm
+and the importance of the random sampling step are clearly
+demonstrated by the number of iterations required to ﬁnd
+an occluding primitive. For example, pixels (2, 1), (1, 2) and
+(3, 2) results are found with 0 iterations by random sampling
+and other pixels require arbitrarily 1 or 2 iterations (with an
+unreported number of Grover iterations).
+
+V. R AY C ASTING : OCCLUSION WITH MULTIPLE
+SOLUTIONS
+
+By adding a third dimension to the primitives it becomes
+possible that more than one primitive projects into the same
+pixel; the number of solutions to Grover’s algorithm, t, can
+now range from 0 (no occlusion) to the total number of
+primitives, N . As long as t is known and less than N/2 the
+problem can still be solved using the algorithm proposed in the
+previous 
+section by setting the number of Grover’s iterations
+r ←  π4 Nt . But in real cases the number of primitives
+projecting onto a given pixel is unknown, therefore r cannot
+be set a priori to the ideal number of iterations.
+A. Algorithm
+
+Fig. 10. 4x4 occlusion image with 8 primitives and multiple possible solutions
+per pixel.
+
+We use an algorithm proposed by Boyer et al. [17] based
+ on
+exponential search and demonstrated to converge in O( Nt )
+iterations; the case t = 0 is handled by terminating after a
+constant number of iterations, c. At each iteration, Algorithm
+4 exponentially increases the maximum number of possible
+Grover iterations S and then randomly selects r from 1 . . . S.
+At each iteration the primitives are also randomly sampled,
+which will succeed with probability Nt .
+
+VI. R AY C ASTING : VISIBILITY WITH MULTIPLE
+SOLUTIONS
+
+In order to compute which primitive, if any, is visible
+along each pixel the minimum depth (Z coordinate) has to
+be evaluated. We use an approach based on Durr et al. [13]
+and given as Algorithm 5. The minimum depth is initialized
+with some maximal value. The exponential search described
+in Algorithm 4, augmented with the current minimum depth,
+is then executed; if a primitive is found and if its depth is
+less than the current minimum then the latter and associated
+primitive are updated. Augmenting Algorithm 4 consists of
+
+B. Results
+A scene with 8 primitives at 3 different depths (Figure
+9) is used to empirically verify Algorithm 4. Simulation
+results show 100% convergence, with an occluding primitive
+being measured for all pixels where such a primitive exists
+
+62
+Authorized licensed use limited to: b-on: UNIVERSIDADE DO MINHO. Downloaded on April 05,2021 at 13:52:05 UTC from IEEE Xplore. Restrictions apply.
+
+Algorithm 5 QMin: Quantum minimum algorithm
+
+VII. C ONCLUSIONS
+
+p = −1; pZ = maxZ; visible = False
+while iteration < c do
+intersected, ID = Q Search Min (x, y, pZ, primitives)
+if intersected then
+visible = True
+if depth[ID] < pZ then
+pZ = depth[ID]; p = ID
+end if
+end if
+iteration ++
+end while
+
+Practical algorithms and implementations of ray casting for
+visibility testing and occlusion from an orthographic camera
+based on quantum algorithms are proposed. These have been
+evaluated both via simulation of a quantum machine, indicative
+of future quantum computing capabilities, and in a simpliﬁed
+form on a real quantum computer. While these implementations are not yet fully ﬂedged and further work is required to
+increase the probability of selecting intersecting primitives,
+the results show the potential of quantum computation for
+computer graphics through a reduction of time complexity for
+core operations in a rendering pipeline. Challenges, w.r.t. ray
+casting, include improvements on size and reliability at the
+hardware level and handling of more general geometric setups
+at the algorithmic level.
+As future work, we intend to investigate quantum counting
+schemes to estimate the number of iterations required for
+Grover’s algorithm. We aim to support generalised geometric
+setups, such as triangles and arbitrary ray directions. However,
+this will likely require more qubits and deeper circuits, and,
+consequently, noise tolerance in quantum algorithms for graphics, which might, eventually, be achieved by using quantum
+error correction schemes.
+
+augmenting the oracle given in Algorithm 2 (Figure 5) with
+depth data. Besides generating the primitives’ bounds and
+comparing with the ray coordinates, now also the primitives
+depths are generated and compared with the current minimum
+depth; the oracle will only ﬂip a primitive’s coefﬁcient sign if
+the 5 conditions (bounds and depth) are satisﬁed. The quantum
+circuit is now adaptive, being redesigned at each iteration of
+Algorithm 5 to account for the current minimum depth.
+A. Results
+Simulation results (see Figure 11) show that although occlusion is always correctly computed, there are a few pixels
+where the primitive with correct minimum depth was not
+found. The histogram in Figure 12 shows, for pixel (0,0), that
+the correct primitive is found ≈ 80% of the trials, which is
+also conﬁrmed by the presented images: 8 out of 10 pixels
+are correctly measured. A more thorough evaluation of the
+probabilities is required to increase the effectiveness of the
+proposed approach.
+
+(a) Reference
+
+(b) Trial 1
+
+R EFERENCES
+[1] R. P. Feynman, “Simulating Physics with Computers,” International
+Journal of Theoretical Physics, vol. 21, no. 6, pp. 467–488, 1982.
+[2] D. Deutsch, “Quantum theory, the Church-Turing principle and the
+universal quantum computer,” Proceedings of the Royal Society of
+London, vol. 400, pp. 97–117, 1985.
+[3] L. K. Grover, “A fast quantum mechanical algorithm for database
+search,” in Proc. of the 28th Annual ACM Symposium on Theory of
+Computing, STOC ’96, pp. 212–219, ACM, 1996.
+[4] P. W. Shor, “Polynomial-time algorithms for prime factorization and discrete logarithms on a quantum computer,” SIAM Journal on Computing,
+vol. 26, pp. 1484–1509, 1997.
+[5] D. Coppersmith, “An approximate fourier transform useful in quantum
+factoring,” Tech. Rep. RC19642, IBM Research Division, 1994.
+[6] A. de Touzalin, C. Marcus, F. Heijman, I. Cirac, R. Murray, and
+T. Calarco, “Quantum manifesto: A new era of technology,” tech. rep.,
+European Commission, 2016. http://qurope.eu/manifesto.
+[7] E. Grumbling and M. Horowitz, “Quantum computing: Progress and
+prospects,” tech. rep., Nat. Acad. of Sciences, Eng. and Medicine, 2019.
+[8] A. Glassner, “Andrew Glassners Notebook: Quantum Computing - Part
+1,” IEEE Computer Graphics and Applications, no. 4, 2001.
+[9] A. Glassner, “Andrew Glassners Notebook: Quantum Computing - Part
+2,” IEEE Computer Graphics and Applications, no. 5, 2001.
+[10] A. Glassner, “Andrew Glassners Notebook: Quantum Computing - Part
+3,” IEEE Computer Graphics and Applications, no. 6, 2001.
+[11] R. Landauer, “Irreversibility and heat generation in the computing
+process,” IBM Journal of Research and Development, vol. 5, 1961.
+[12] K. Sadakane, N. Sugawara, and T. Tokuyama, “Quantum Computation
+in Computational Geometry,” Interdisciplinary Information Sciences,
+vol. 8, no. 2, pp. 129–136, 2002.
+[13] C. Durr and P. Hoyer, “A quantum algorithm for ﬁnding the minimum,”
+in in LANL e-print quantph/9607014, http://xxx.lanl.gov, 1996.
+[14] S. Caraiman, “Quantum computer graphics algorithms,” Buletinul Institutului Politehnic din Iasi, Sectia Automatica si Calculatoare, vol. 62,
+no. 4, pp. 21–38, 2012.
+[15] M. Lanzagorta and J. Uhlmann, Quantum Computer Science. Synthesis
+Lectures on Quantum Computing, Morgan & Claypool, 2009.
+[16] E. R. Johnston, “Quantum supersampling,” in ACM SIGGRAPH 2016
+Talks, SIGGRAPH ’16, pp. 38:1–38:1, ACM, 2016.
+[17] M. Boyer, G. Brassard, P. Hayer, and A. Tapp, “Tight bounds on
+quantum searching,” Fortschritte der Physik, vol. 46, no. 5, 1998.
+
+(c) Trial 2
+
+Fig. 11. Reference and visibility results for 2 simulation trials.
+
+Fig. 12. Histogram: visibility for pixel (0,0) in 265 simulation trials.
+
+63
+Authorized licensed use limited to: b-on: UNIVERSIDADE DO MINHO. Downloaded on April 05,2021 at 13:52:05 UTC from IEEE Xplore. Restrictions apply.
+
+
